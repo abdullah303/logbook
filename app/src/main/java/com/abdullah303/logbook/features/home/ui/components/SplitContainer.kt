@@ -43,7 +43,7 @@ fun SplitContainer(
                 Column {
                     Text(
                         text = split.name,
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Text(

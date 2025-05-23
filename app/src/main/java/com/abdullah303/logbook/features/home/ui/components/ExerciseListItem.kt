@@ -27,7 +27,7 @@ fun ExerciseListItem(
     ) {
         Text(
             text = exerciseTemplate.name,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
