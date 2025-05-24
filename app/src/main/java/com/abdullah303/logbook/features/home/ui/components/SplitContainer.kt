@@ -72,7 +72,8 @@ fun SplitContainer(
                 items(split.workouts) { workout ->
                     WorkoutCard(
                         workout = workout,
-                        exerciseTemplates = exerciseTemplates
+                        exerciseTemplates = exerciseTemplates,
+                        split = split
                     )
                 }
             }
