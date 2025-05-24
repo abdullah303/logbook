@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import com.abdullah303.logbook.features.home.data.DummyData
-import com.abdullah303.logbook.features.home.data.Split
+import com.abdullah303.logbook.features.splits.data.DummyData
+import com.abdullah303.logbook.features.splits.data.Split
 
 /**
  * Fast muscle visualization using actual muscle diagram images with color overlays.
@@ -103,7 +103,7 @@ object MuscleImageGenerator {
     /**
      * Computes muscle usage frequency for a single workout.
      */
-    fun computeWorkoutMuscleUsage(workout: com.abdullah303.logbook.features.home.data.Workout): Map<String, Int> {
+    fun computeWorkoutMuscleUsage(workout: com.abdullah303.logbook.features.splits.data.Workout): Map<String, Int> {
         val counts = mutableMapOf<String, Int>().withDefault { 0 }
 
         workout.exercises.forEach { instance ->
@@ -216,7 +216,7 @@ object MuscleImageGenerator {
      */
     fun getWorkoutMuscleHeatmapImage(
         context: Context,
-        workout: com.abdullah303.logbook.features.home.data.Workout,
+        workout: com.abdullah303.logbook.features.splits.data.Workout,
         transparentBg: Boolean = true
     ): Bitmap {
         val muscleUsage = computeWorkoutMuscleUsage(workout)
@@ -264,7 +264,7 @@ object MuscleImageGenerator {
      */
     fun getWorkoutMuscleHeatmapImageWithColor(
         context: Context,
-        workout: com.abdullah303.logbook.features.home.data.Workout,
+        workout: com.abdullah303.logbook.features.splits.data.Workout,
         transparentBg: Boolean = true,
         heatmapColor: String = "2196F3"
     ): Bitmap {
@@ -419,7 +419,7 @@ fun MuscleHeatmapImage(
  */
 @Composable
 fun WorkoutMuscleHeatmapImage(
-    workout: com.abdullah303.logbook.features.home.data.Workout,
+    workout: com.abdullah303.logbook.features.splits.data.Workout,
     modifier: Modifier = Modifier,
     transparentBg: Boolean = true,
     heatmapColor: String = "2196F3" // Default blue color

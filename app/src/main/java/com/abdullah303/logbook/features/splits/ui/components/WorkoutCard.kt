@@ -1,4 +1,4 @@
-package com.abdullah303.logbook.features.home.ui.components
+package com.abdullah303.logbook.features.splits.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,9 +12,9 @@ import androidx.compose.ui.unit.dp
 import com.abdullah303.logbook.core.utils.MuscleHeatmapImage
 import com.abdullah303.logbook.core.utils.WorkoutMuscleHeatmapImage
 import com.abdullah303.logbook.core.utils.countTotalSets
-import com.abdullah303.logbook.features.home.data.ExerciseTemplate
-import com.abdullah303.logbook.features.home.data.Split
-import com.abdullah303.logbook.features.home.data.Workout
+import com.abdullah303.logbook.features.splits.data.ExerciseTemplate
+import com.abdullah303.logbook.features.splits.data.Split
+import com.abdullah303.logbook.features.splits.data.Workout
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

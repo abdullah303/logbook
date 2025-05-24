@@ -1,4 +1,4 @@
-package com.abdullah303.logbook.features.home.data
+package com.abdullah303.logbook.features.splits.data
 
 import java.time.LocalDateTime
 import java.util.UUID

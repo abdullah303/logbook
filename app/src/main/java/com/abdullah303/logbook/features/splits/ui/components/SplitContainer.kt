@@ -1,4 +1,4 @@
-package com.abdullah303.logbook.features.home.ui.components
+package com.abdullah303.logbook.features.splits.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.abdullah303.logbook.features.home.data.ExerciseTemplate
-import com.abdullah303.logbook.features.home.data.Split
+import com.abdullah303.logbook.features.splits.data.ExerciseTemplate
+import com.abdullah303.logbook.features.splits.data.Split
 
 @Composable
 fun SplitContainer(

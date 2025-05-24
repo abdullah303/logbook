@@ -1,4 +1,4 @@
-package com.abdullah303.logbook.features.home.ui.components
+package com.abdullah303.logbook.features.splits.ui.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
