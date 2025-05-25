@@ -22,7 +22,7 @@ fun ExerciseListItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(12.dp)
     ) {
         Text(

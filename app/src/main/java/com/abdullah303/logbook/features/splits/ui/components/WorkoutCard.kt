@@ -1,15 +1,12 @@
 package com.abdullah303.logbook.features.splits.ui.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.abdullah303.logbook.core.utils.MuscleHeatmapImage
 import com.abdullah303.logbook.core.utils.WorkoutMuscleHeatmapImage
 import com.abdullah303.logbook.core.utils.countTotalSets
 import com.abdullah303.logbook.features.splits.data.ExerciseTemplate
@@ -29,10 +26,10 @@ fun WorkoutCard(
             .width(280.dp)
             .height(320.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
+            defaultElevation = 4.dp
         )
     ) {
         Column(
@@ -55,12 +52,13 @@ fun WorkoutCard(
                     Text(
                         text = workout.name,
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "${workout.countTotalSets()} sets",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
@@ -78,24 +76,17 @@ fun WorkoutCard(
             // Divider
             Divider(
                 modifier = Modifier.padding(vertical = 12.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
             )
             
-            // Exercises List
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(workout.exercises) { exercise ->
-                    val exerciseTemplate = exerciseTemplates.find { it.id == exercise.exerciseTemplateId }
-                    exerciseTemplate?.let {
-                        ExerciseListItem(
-                            exercise = exercise,
-                            exerciseTemplate = it
-                        )
-                    }
-                }
-            }
+            // Timeline with exercise items
+            Timeline(
+                exercises = workout.exercises,
+                exerciseTemplates = exerciseTemplates,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
         }
     }
 } 

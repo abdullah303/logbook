@@ -1,6 +1,11 @@
 package com.abdullah303.logbook.features.splits.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -22,6 +27,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.abdullah303.logbook.features.graphs.ui.GraphsScreen
@@ -44,21 +50,39 @@ fun SplitsScreen(navController: NavController) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            ) {
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.FitnessCenter, contentDescription = null) },
                     selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 }
+                    onClick = { selectedTab = 0 },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Timeline, contentDescription = null) },
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
+                    onClick = { selectedTab = 1 },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 }
+                    onClick = { selectedTab = 2 },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
             }
         },
@@ -68,29 +92,14 @@ fun SplitsScreen(navController: NavController) {
                 FloatingActionButtonMenu(
                     expanded = fabMenuExpanded,
                     button = {
-                        ToggleFloatingActionButton(
-                            modifier = Modifier
-                                .semantics {
-                                    traversalIndex = -1f
-                                    stateDescription = if (fabMenuExpanded) "Expanded" else "Collapsed"
-                                    contentDescription = "Toggle menu"
-                                }
-                                .animateFloatingActionButton(
-                                    visible = true,
-                                    alignment = Alignment.BottomEnd
-                                ),
-                            checked = fabMenuExpanded,
-                            onCheckedChange = { fabMenuExpanded = !fabMenuExpanded }
+                        FloatingActionButton(
+                            onClick = { fabMenuExpanded = !fabMenuExpanded },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         ) {
-                            val imageVector by remember {
-                                derivedStateOf {
-                                    if (checkedProgress > 0.5f) Icons.Filled.Close else Icons.Filled.Add
-                                }
-                            }
                             Icon(
-                                painter = rememberVectorPainter(imageVector),
-                                contentDescription = null,
-                                modifier = Modifier.animateIcon({ checkedProgress })
+                                imageVector = if (fabMenuExpanded) Icons.Filled.Close else Icons.Filled.Add,
+                                contentDescription = if (fabMenuExpanded) "Close menu" else "Open menu"
                             )
                         }
                     }
@@ -100,8 +109,19 @@ fun SplitsScreen(navController: NavController) {
                             fabMenuExpanded = false
                             // TODO: Navigate to create split
                         },
-                        icon = { Icon(Icons.Default.List, contentDescription = null) },
-                        text = { Text("Create Split") }
+                        icon = { 
+                            Icon(
+                                Icons.Default.List,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        text = { 
+                            Text(
+                                "Create Split",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     )
                     
                     FloatingActionButtonMenuItem(
@@ -109,8 +129,19 @@ fun SplitsScreen(navController: NavController) {
                             fabMenuExpanded = false
                             // TODO: Navigate to create workout
                         },
-                        icon = { Icon(Icons.Default.FitnessCenter, contentDescription = null) },
-                        text = { Text("Create Workout") }
+                        icon = { 
+                            Icon(
+                                Icons.Default.FitnessCenter,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        text = { 
+                            Text(
+                                "Create Workout",
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     )
                 }
             }
@@ -154,7 +185,7 @@ private fun SplitsContent(
         SplitContainer(
             split = activeSplit,
             exerciseTemplates = DummyData.exerciseTemplates,
-            onSettingsClick = { /* TODO: Show split settings */ }
+            onSettingsClick = { /* TODO: Handle settings click */ }
         )
     }
 } 

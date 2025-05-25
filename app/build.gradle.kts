@@ -51,6 +51,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.adaptive)
     implementation(libs.androidx.material.icons)
+    
+    // Add Material 3 base theme dependency
+    implementation("com.google.android.material:material:1.11.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

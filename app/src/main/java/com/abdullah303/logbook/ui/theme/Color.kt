@@ -7,46 +7,93 @@ import androidx.compose.ui.graphics.Color
 
 /**
  * Rosé Pine color schemes (main variant for dark theme, dawn variant for light theme)
- * Source: Rosé Pine palette roles from rosepinetheme.com ([rosepinetheme.com](https://rosepinetheme.com/ca/palette/ingredients/?utm_source=chatgpt.com))
+ * Mapped to Material 3 color roles following Material Design guidelines
+ * Source: Rosé Pine palette from rosepinetheme.com
  */
 val LightColors: ColorScheme = lightColorScheme(
-    primary = Color(0xFF286983),      // pine (dawn) ([rosepinetheme.com](https://rosepinetheme.com/ca/palette/ingredients/?utm_source=chatgpt.com))
-    onPrimary = Color(0xFF575279),    // text (dawn)
+    // Primary colors - using pine (dawn) as the primary brand color
+    primary = Color(0xFF286983),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFC4E7FF),
+    onPrimaryContainer = Color(0xFF001E2E),
 
-    secondary = Color(0xFFD7827E),    // rose (dawn)
-    onSecondary = Color(0xFF575279),
+    // Secondary colors - using rose (dawn) for secondary actions
+    secondary = Color(0xFFD7827E),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFFFDAD8),
+    onSecondaryContainer = Color(0xFF410002),
 
-    tertiary = Color(0xFFEA9D34),     // gold (dawn)
-    onTertiary = Color(0xFF575279),
+    // Tertiary colors - using gold (dawn) for tertiary actions
+    tertiary = Color(0xFFEA9D34),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFFFDDB6),
+    onTertiaryContainer = Color(0xFF2D1600),
 
-    background = Color(0xFFFAF4ED),   // base (dawn)
+    // Surface colors - using base and surface (dawn) for different elevation levels
+    surface = Color(0xFFFFFAF3),
+    onSurface = Color(0xFF575279),
+    surfaceVariant = Color(0xFFFAF4ED),
+    onSurfaceVariant = Color(0xFF575279),
+
+    // Background colors
+    background = Color(0xFFFAF4ED),
     onBackground = Color(0xFF575279),
 
-    surface = Color(0xFFFFFAF3),      // surface (dawn)
-    onSurface = Color(0xFF575279),
+    // Error colors - using love (dawn) for error states
+    error = Color(0xFFB4637A),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD8),
+    onErrorContainer = Color(0xFF410002),
 
-    error = Color(0xFFB4637A),        // love (dawn)
-    onError = Color(0xFFFFFAF3)
+    // Outline colors
+    outline = Color(0xFF575279),
+    outlineVariant = Color(0xFF575279).copy(alpha = 0.5f),
+
+    // Scrim color
+    scrim = Color(0xFF000000).copy(alpha = 0.32f)
 )
 
 val DarkColors: ColorScheme = darkColorScheme(
-    primary = Color(0xFF31748F),      // pine (main) ([rosepinetheme.com](https://rosepinetheme.com/ca/palette/ingredients/?utm_source=chatgpt.com))
-    onPrimary = Color(0xFFE0DEF4),    // text (main)
+    // Primary colors - using pine (main) as the primary brand color
+    primary = Color(0xFF31748F),
+    onPrimary = Color(0xFFE0DEF4),
+    primaryContainer = Color(0xFF004B63),
+    onPrimaryContainer = Color(0xFFC4E7FF),
 
-    secondary = Color(0xFFEBBCBA),    // rose (main)
+    // Secondary colors - using rose (main) for secondary actions
+    secondary = Color(0xFFEBBCBA),
     onSecondary = Color(0xFFE0DEF4),
+    secondaryContainer = Color(0xFF8B4B4B),
+    onSecondaryContainer = Color(0xFFFFDAD8),
 
-    tertiary = Color(0xFFF6C177),     // gold (main)
+    // Tertiary colors - using gold (main) for tertiary actions
+    tertiary = Color(0xFFF6C177),
     onTertiary = Color(0xFFE0DEF4),
+    tertiaryContainer = Color(0xFF8B4B00),
+    onTertiaryContainer = Color(0xFFFFDDB6),
 
-    background = Color(0xFF191724),   // base (main)
+    // Surface colors - using base and surface (main) for different elevation levels
+    surface = Color(0xFF1F1D2E),
+    onSurface = Color(0xFFE0DEF4),
+    surfaceVariant = Color(0xFF191724),
+    onSurfaceVariant = Color(0xFFE0DEF4),
+
+    // Background colors
+    background = Color(0xFF191724),
     onBackground = Color(0xFFE0DEF4),
 
-    surface = Color(0xFF1F1D2E),      // surface (main)
-    onSurface = Color(0xFFE0DEF4),
+    // Error colors - using love (main) for error states
+    error = Color(0xFFEB6F92),
+    onError = Color(0xFFE0DEF4),
+    errorContainer = Color(0xFF8B4B4B),
+    onErrorContainer = Color(0xFFFFDAD8),
 
-    error = Color(0xFFEB6F92),        // love (main)
-    onError = Color(0xFF1F1D2E)
+    // Outline colors
+    outline = Color(0xFFE0DEF4),
+    outlineVariant = Color(0xFFE0DEF4).copy(alpha = 0.5f),
+
+    // Scrim color
+    scrim = Color(0xFF000000).copy(alpha = 0.32f)
 )
 
 val Purple80 = Color(0xFFD0BCFF)
