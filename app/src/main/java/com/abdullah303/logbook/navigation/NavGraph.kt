@@ -7,12 +7,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.abdullah303.logbook.features.splits.ui.SplitsScreen
 
-sealed class Screen(val route: String) {
-    object Splits : Screen("splits")
-    object Graphs : Screen("graphs")
-    object Settings : Screen("settings")
-}
-
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(
