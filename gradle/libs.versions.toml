@@ -9,14 +9,18 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
 composeBom = "2025.05.01"
+material = "1.12.0"
 material3 = "1.4.0-alpha15"
 navigationCompose = "2.9.0"
 material3AdaptiveAndroid = "1.2.0-alpha06"
 materialIcons = "1.7.8"
+uiTextGoogleFontsRobotoFlex = "1.8.2"
 
 [libraries]
 androidx-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFontsRobotoFlex" }
+androidx-ui-text-google-fonts-roboto-flex = { module = "androidx.compose.ui:ui-text-google-fonts-roboto-flex", version.ref = "uiTextGoogleFontsRobotoFlex" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -33,6 +37,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-material3-adaptive-android = { group = "androidx.compose.material3", name = "adaptive", version.ref = "material3AdaptiveAndroid" }
 androidx-material-icons = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
