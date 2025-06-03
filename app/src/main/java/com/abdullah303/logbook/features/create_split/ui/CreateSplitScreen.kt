@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.abdullah303.logbook.features.create_split.ui.components.SplitCreationToolbar
+import com.abdullah303.logbook.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -65,7 +66,7 @@ fun CreateSplitScreen(
             }
 
             SplitCreationToolbar(
-                onAddExercise = { /* TODO: Implement add exercise */ },
+                onAddExercise = { navController.navigate(Screen.ExerciseList.route) },
                 onAddDay = { /* TODO: Implement add day */ },
                 onRenameDay = { /* TODO: Implement rename day */ },
                 onDeleteDay = { /* TODO: Implement delete day */ },

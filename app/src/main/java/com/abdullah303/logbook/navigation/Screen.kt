@@ -6,4 +6,5 @@ sealed class Screen(val route: String) {
     object Graphs : Screen("graphs")
     object Settings : Screen("settings")
     object ExerciseList : Screen(NavRoutes.EXERCISE_LIST)
+    object CreateExercise : Screen(NavRoutes.CREATE_EXERCISE)
 } 

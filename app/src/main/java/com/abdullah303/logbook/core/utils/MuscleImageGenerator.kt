@@ -27,7 +27,7 @@ object MuscleImageGenerator {
 
     private val availableMuscleGroups = setOf(
         "chest", "back", "biceps", "triceps", "quadriceps", "hamstrings", 
-        "calves", "shoulders", "glutes", "forearms", "abs", "traps"
+        "calves", "shoulders", "glutes", "forearms", "abs", "traps", "neck", "front delts", "side delts", "rear delts"
     )
 
     /**
@@ -40,13 +40,17 @@ object MuscleImageGenerator {
         "triceps" to "muscles_triceps",
         "quadriceps" to "muscles_quadriceps",
         "hamstrings" to "muscles_hamstring",
-        "calves" to "muscles_calfs",
+        "calves" to "muscles_calves",
         "shoulders" to "muscles_shoulders",
         "glutes" to "muscles_gluteus",
         "forearms" to "muscles_forearms",
         "abs" to "muscles_abs",
-        "traps" to "muscles_neck" // Using neck as closest match for traps
-    )
+        "traps" to "muscles_back_upper",
+        "neck" to "muscles_neck",
+        "front delts" to "muscles_shoulders_front",
+        "side delts" to "muscles_shoulders_front",
+        "rear delts" to "muscles_shoulders_back"
+        )
 
     /**
      * Maps exercise template muscle names to our standardized muscle names.
