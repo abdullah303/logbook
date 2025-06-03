@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.material3.ToggleFloatingActionButtonDefaults.animateIcon
 import androidx.compose.runtime.*
@@ -15,13 +16,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.traversalIndex
 
 /**
  * Floating Action Button menu for the Splits screen.
@@ -51,17 +45,12 @@ fun SplitsFabMenu(
             expanded = fabMenuExpanded,
             button = {
                 ToggleFloatingActionButton(
-                    modifier = Modifier
-                        .semantics {
-                            traversalIndex = -1f
-                            stateDescription = if (fabMenuExpanded) "Expanded" else "Collapsed"
-                            contentDescription = "Toggle menu"
-                        }
-                        .animateFloatingActionButton(
-                            visible = true,
-                            alignment = Alignment.BottomEnd
-                        ),
+                    modifier = Modifier.animateFloatingActionButton(
+                        visible = true,
+                        alignment = Alignment.BottomEnd
+                    ),
                     checked = fabMenuExpanded,
+                    containerSize = ToggleFloatingActionButtonDefaults.containerSizeMedium(),
                     onCheckedChange = { fabMenuExpanded = !fabMenuExpanded }
                 ) {
                     val imageVector by remember {
@@ -71,40 +60,26 @@ fun SplitsFabMenu(
                     }
                     Icon(
                         painter = rememberVectorPainter(imageVector),
-                        contentDescription = null,
+                        contentDescription = if (fabMenuExpanded) "Close menu" else "Open menu",
                         modifier = Modifier.animateIcon({ checkedProgress })
                     )
                 }
             }
         ) {
-            menuItems.forEachIndexed { i, (item, onClick) ->
+            menuItems.forEach { (item, onClick) ->
                 FloatingActionButtonMenuItem(
-                    modifier = Modifier.semantics {
-                        isTraversalGroup = true
-                        if (i == menuItems.size - 1) {
-                            customActions = listOf(
-                                CustomAccessibilityAction(
-                                    label = "Close menu",
-                                    action = {
-                                        fabMenuExpanded = false
-                                        true
-                                    }
-                                )
-                            )
-                        }
-                    },
-                    onClick = {
+                    onClick = { 
                         fabMenuExpanded = false
                         onClick()
                     },
-                    icon = {
+                    icon = { 
                         Icon(
                             item.first,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     },
-                    text = {
+                    text = { 
                         Text(
                             text = item.second,
                             color = MaterialTheme.colorScheme.onSurface,
