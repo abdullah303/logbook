@@ -18,6 +18,7 @@ import androidx.navigation.NavController
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.abdullah303.logbook.features.create_exercise.presentation.CreateExerciseViewModel
+import com.abdullah303.logbook.features.create_exercise.presentation.SaveResult
 import com.abdullah303.logbook.navigation.Screen
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -30,7 +31,25 @@ fun CreateExerciseScreen(
     viewModel: CreateExerciseViewModel = hiltViewModel()
 ) {
     val exercise by viewModel.exercise.collectAsStateWithLifecycle()
+    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
+    val saveResult by viewModel.saveResult.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Handle save result
+    LaunchedEffect(saveResult) {
+        when (saveResult) {
+            is SaveResult.Success -> {
+                snackbarHostState.showSnackbar("Exercise saved successfully!")
+                navController.navigateUp()
+            }
+            is SaveResult.Error -> {
+                snackbarHostState.showSnackbar((saveResult as SaveResult.Error).message)
+            }
+            null -> { /* Do nothing */ }
+        }
+        viewModel.clearSaveResult()
+    }
 
     // Handle equipment selection
     LaunchedEffect(navController.previousBackStackEntry?.savedStateHandle) {
@@ -92,6 +111,7 @@ fun CreateExerciseScreen(
     }
     
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Create Exercise") },
@@ -105,15 +125,20 @@ fun CreateExerciseScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = {
-                            viewModel.clearExercise()
-                            navController.navigateUp()
-                        }
+                        onClick = { viewModel.saveExercise() },
+                        enabled = !isSaving && exercise.name.isNotBlank()
                     ) {
-                        Icon(
-                            Icons.Default.Save,
-                            contentDescription = "Save"
-                        )
+                        if (isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.Save,
+                                contentDescription = "Save Exercise"
+                            )
+                        }
                     }
                 }
             )
@@ -150,7 +175,11 @@ fun CreateExerciseScreen(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
+                    ),
+                    isError = exercise.name.isBlank(),
+                    supportingText = if (exercise.name.isBlank()) {
+                        { Text("Exercise name is required") }
+                    } else null
                 )
             }
             
@@ -245,7 +274,8 @@ fun CreateExerciseScreen(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                         ),
-                        interactionSource = primaryMuscleInteractionSource
+                        interactionSource = primaryMuscleInteractionSource,
+                        placeholder = { Text("Select primary muscle") }
                     )
                     
                     // Auxiliary Muscles
@@ -275,7 +305,8 @@ fun CreateExerciseScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        interactionSource = auxiliaryMusclesInteractionSource
+                        interactionSource = auxiliaryMusclesInteractionSource,
+                        placeholder = { Text("Select auxiliary muscles (optional)") }
                     )
                 }
             }
@@ -318,7 +349,8 @@ fun CreateExerciseScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                     },
-                    interactionSource = bodyweightInteractionSource
+                    interactionSource = bodyweightInteractionSource,
+                    placeholder = { Text("Select bodyweight contribution (optional)") }
                 )
             }
             

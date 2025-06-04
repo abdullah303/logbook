@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
-    kotlin("kapt")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -42,9 +42,6 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "2.1.21"
     }
-    kapt {
-        correctErrorTypes = true
-    }
 }
 
 dependencies {
@@ -61,9 +58,14 @@ dependencies {
     
     // Hilt dependencies
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    
+    // Room dependencies
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
     
     // Material3 dependencies
     implementation(libs.material)

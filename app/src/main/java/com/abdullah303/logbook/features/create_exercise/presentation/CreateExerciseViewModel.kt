@@ -20,6 +20,12 @@ class CreateExerciseViewModel @Inject constructor(
     private val _exercise = MutableStateFlow(Exercise())
     val exercise: StateFlow<Exercise> = _exercise.asStateFlow()
 
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
+
+    private val _saveResult = MutableStateFlow<SaveResult?>(null)
+    val saveResult: StateFlow<SaveResult?> = _saveResult.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.getCurrentExercise().collect { exercise ->
@@ -59,9 +65,41 @@ class CreateExerciseViewModel @Inject constructor(
         updateExercise(_exercise.value)
     }
 
+    fun saveExercise() {
+        val currentExercise = _exercise.value
+        
+        if (currentExercise.name.isBlank()) {
+            _saveResult.value = SaveResult.Error("Exercise name is required")
+            return
+        }
+        
+        viewModelScope.launch {
+            _isSaving.value = true
+            try {
+                repository.saveExercise(currentExercise)
+                _saveResult.value = SaveResult.Success
+                // Clear the current exercise after saving
+                repository.clearExercise()
+            } catch (e: Exception) {
+                _saveResult.value = SaveResult.Error("Failed to save exercise: ${e.message}")
+            } finally {
+                _isSaving.value = false
+            }
+        }
+    }
+
+    fun clearSaveResult() {
+        _saveResult.value = null
+    }
+
     fun clearExercise() {
         viewModelScope.launch {
             repository.clearExercise()
         }
     }
+}
+
+sealed class SaveResult {
+    object Success : SaveResult()
+    data class Error(val message: String) : SaveResult()
 } 
