@@ -15,79 +15,78 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.abdullah303.logbook.features.create_exercise.presentation.CreateExerciseViewModel
 import com.abdullah303.logbook.navigation.Screen
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateExerciseScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: CreateExerciseViewModel = hiltViewModel()
 ) {
-    var exerciseName by remember { mutableStateOf("") }
-    var equipment by remember { mutableStateOf("") }
-    var primaryMuscle by remember { mutableStateOf("") }
-    var auxillaryMuscles by remember { mutableStateOf("") }
-    var bodyweightContribution by remember { mutableStateOf("") }
-    
-    // Listen for muscle selection results
+    val exercise by viewModel.exercise.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+
+    // Handle equipment selection
+    LaunchedEffect(navController.previousBackStackEntry?.savedStateHandle) {
+        navController.previousBackStackEntry?.savedStateHandle?.get<String>("selectedEquipment")?.let { equipment ->
+            if (equipment.isNotEmpty()) {
+                viewModel.updateEquipment(equipment)
+                navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", "")
+            }
+        }
+    }
+
+    // Also observe the current back stack entry for equipment selection
+    LaunchedEffect(navController.currentBackStackEntry?.savedStateHandle) {
+        navController.currentBackStackEntry?.savedStateHandle?.getStateFlow("selectedEquipment", "")?.collect { equipment ->
+            if (equipment.isNotEmpty()) {
+                viewModel.updateEquipment(equipment)
+                navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", "")
+            }
+        }
+    }
+
+    // Handle primary muscle selection
     LaunchedEffect(navController) {
         navController.currentBackStackEntry
             ?.savedStateHandle
             ?.getStateFlow("selectedPrimaryMuscle", "")
             ?.collect { selectedMuscle ->
                 if (selectedMuscle.isNotEmpty()) {
-                    primaryMuscle = selectedMuscle
-                    // Clear the saved state to prevent reprocessing
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.remove<String>("selectedPrimaryMuscle")
+                    viewModel.updatePrimaryMuscle(selectedMuscle)
+                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedPrimaryMuscle")
                 }
             }
     }
     
+    // Handle auxiliary muscles selection
     LaunchedEffect(navController) {
         navController.currentBackStackEntry
             ?.savedStateHandle
             ?.getStateFlow("selectedAuxillaryMuscles", "")
             ?.collect { selectedMuscles ->
                 if (selectedMuscles.isNotEmpty()) {
-                    auxillaryMuscles = selectedMuscles
-                    // Clear the saved state to prevent reprocessing
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.remove<String>("selectedAuxillaryMuscles")
+                    viewModel.updateAuxiliaryMuscles(selectedMuscles)
+                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedAuxillaryMuscles")
                 }
             }
     }
     
+    // Handle bodyweight contribution selection
     LaunchedEffect(navController) {
         navController.currentBackStackEntry
             ?.savedStateHandle
             ?.getStateFlow("selectedBodyweightPercentage", "")
             ?.collect { selectedPercentage ->
                 if (selectedPercentage.isNotEmpty()) {
-                    bodyweightContribution = selectedPercentage
-                    // Clear the saved state to prevent reprocessing
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.remove<String>("selectedBodyweightPercentage")
-                }
-            }
-    }
-    
-    // Listen for equipment selection
-    LaunchedEffect(navController) {
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.getStateFlow("selectedEquipment", "")
-            ?.collect { selectedEquipment ->
-                if (selectedEquipment.isNotEmpty()) {
-                    equipment = selectedEquipment
-                    // Clear the saved state to prevent reprocessing
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.remove<String>("selectedEquipment")
+                    viewModel.updateBodyweightContribution(selectedPercentage)
+                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedBodyweightPercentage")
                 }
             }
     }
@@ -107,7 +106,7 @@ fun CreateExerciseScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            // TODO: Save exercise
+                            viewModel.clearExercise()
                             navController.navigateUp()
                         }
                     ) {
@@ -141,12 +140,12 @@ fun CreateExerciseScreen(
                 )
             ) {
                 OutlinedTextField(
-                    value = exerciseName,
-                    onValueChange = { exerciseName = it },
+                    value = exercise.name,
+                    onValueChange = { viewModel.updateName(it) },
                     label = { Text("Exercise Name") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(16.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -165,36 +164,40 @@ fun CreateExerciseScreen(
                     defaultElevation = 0.dp
                 )
             ) {
+                val equipmentInteractionSource = remember { MutableInteractionSource() }
+                LaunchedEffect(equipmentInteractionSource) {
+                    equipmentInteractionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            navController.navigate(Screen.EquipmentSelection.route)
+                        }
+                    }
+                }
+                
                 OutlinedTextField(
-                    value = equipment,
+                    value = exercise.equipment,
                     onValueChange = { },
                     label = { Text("Equipment") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(16.dp),
                     singleLine = true,
                     readOnly = true,
                     trailingIcon = {
                         Icon(
                             Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Select equipment",
+                            contentDescription = "Select Equipment",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
-                    interactionSource = remember { MutableInteractionSource() }
-                        .also { interactionSource ->
-                            LaunchedEffect(interactionSource) {
-                                interactionSource.interactions.collect {
-                                    if (it is PressInteraction.Release) {
-                                        navController.navigate(Screen.EquipmentSelection.route)
-                                    }
-                                }
-                            }
-                        }
+                    interactionSource = equipmentInteractionSource,
+                    placeholder = { Text("Select equipment") },
+                    textStyle = MaterialTheme.typography.bodyLarge
                 )
             }
             
@@ -211,12 +214,21 @@ fun CreateExerciseScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Primary Muscle - Clickable
+                    // Primary Muscle
+                    val primaryMuscleInteractionSource = remember { MutableInteractionSource() }
+                    LaunchedEffect(primaryMuscleInteractionSource) {
+                        primaryMuscleInteractionSource.interactions.collect { interaction ->
+                            if (interaction is PressInteraction.Release) {
+                                navController.navigate(Screen.PrimaryMuscleSelection.route)
+                            }
+                        }
+                    }
+                    
                     OutlinedTextField(
-                        value = primaryMuscle,
+                        value = exercise.primaryMuscle,
                         onValueChange = { },
                         label = { Text("Primary Muscle") },
                         modifier = Modifier.fillMaxWidth(),
@@ -225,7 +237,7 @@ fun CreateExerciseScreen(
                         trailingIcon = {
                             Icon(
                                 Icons.Default.KeyboardArrowRight,
-                                contentDescription = "Select muscle",
+                                contentDescription = "Select Primary Muscle",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
@@ -233,47 +245,37 @@ fun CreateExerciseScreen(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                         ),
-                        interactionSource = remember { MutableInteractionSource() }
-                            .also { interactionSource ->
-                                LaunchedEffect(interactionSource) {
-                                    interactionSource.interactions.collect {
-                                        if (it is PressInteraction.Release) {
-                                            navController.navigate(Screen.PrimaryMuscleSelection.route)
-                                        }
-                                    }
-                                }
-                            }
+                        interactionSource = primaryMuscleInteractionSource
                     )
                     
-                    // Auxillary Muscles - Clickable
+                    // Auxiliary Muscles
+                    val auxiliaryMusclesInteractionSource = remember { MutableInteractionSource() }
+                    LaunchedEffect(auxiliaryMusclesInteractionSource) {
+                        auxiliaryMusclesInteractionSource.interactions.collect { interaction ->
+                            if (interaction is PressInteraction.Release) {
+                                navController.navigate(Screen.AuxillaryMuscleSelection.route)
+                            }
+                        }
+                    }
+                    
                     OutlinedTextField(
-                        value = auxillaryMuscles,
+                        value = exercise.auxiliaryMuscles,
                         onValueChange = { },
-                        label = { Text("Auxillary Muscles") },
+                        label = { Text("Auxiliary Muscles") },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        ),
                         readOnly = true,
                         trailingIcon = {
                             Icon(
                                 Icons.Default.KeyboardArrowRight,
-                                contentDescription = "Select muscles",
+                                contentDescription = "Select Auxiliary Muscles",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                        ),
-                        interactionSource = remember { MutableInteractionSource() }
-                            .also { interactionSource ->
-                                LaunchedEffect(interactionSource) {
-                                    interactionSource.interactions.collect {
-                                        if (it is PressInteraction.Release) {
-                                            navController.navigate(Screen.AuxillaryMuscleSelection.route)
-                                        }
-                                    }
-                                }
-                            }
+                        interactionSource = auxiliaryMusclesInteractionSource
                     )
                 }
             }
@@ -288,36 +290,35 @@ fun CreateExerciseScreen(
                     defaultElevation = 0.dp
                 )
             ) {
+                val bodyweightInteractionSource = remember { MutableInteractionSource() }
+                LaunchedEffect(bodyweightInteractionSource) {
+                    bodyweightInteractionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            navController.navigate(Screen.BodyweightSelection.route)
+                        }
+                    }
+                }
+                
                 OutlinedTextField(
-                    value = if (bodyweightContribution.isNotEmpty()) "$bodyweightContribution%" else "",
+                    value = if (exercise.bodyweightContribution.isNotEmpty()) "${exercise.bodyweightContribution}%" else "",
                     onValueChange = { },
-                    label = { Text("Bodyweight Contribution (%)") },
+                    label = { Text("Bodyweight Contribution") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    singleLine = true,
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Select percentage",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    },
+                        .padding(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                     ),
-                    interactionSource = remember { MutableInteractionSource() }
-                        .also { interactionSource ->
-                            LaunchedEffect(interactionSource) {
-                                interactionSource.interactions.collect {
-                                    if (it is PressInteraction.Release) {
-                                        navController.navigate(Screen.BodyweightSelection.route)
-                                    }
-                                }
-                            }
-                        }
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            contentDescription = "Select Bodyweight Contribution",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    interactionSource = bodyweightInteractionSource
                 )
             }
             

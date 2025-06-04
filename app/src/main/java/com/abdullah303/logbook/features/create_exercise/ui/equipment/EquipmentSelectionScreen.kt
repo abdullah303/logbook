@@ -69,6 +69,9 @@ fun EquipmentSelectionScreen(
                     ),
                     onClick = {
                         onEquipmentSelected(equipment)
+                        // Save to both previous and current back stack entries
+                        navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
+                        navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
                         navController.navigateUp()
                     }
                 ) {

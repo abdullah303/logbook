@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
 }
 
 android {
@@ -28,14 +30,20 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "2.1.21"
+    }
+    kapt {
+        correctErrorTypes = true
     }
 }
 
@@ -49,11 +57,18 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.adaptive)
     implementation(libs.androidx.material.icons)
     
-    // Add Material 3 base theme dependency
-    implementation("com.google.android.material:material:1.11.0")
+    // Hilt dependencies
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    
+    // Material3 dependencies
+    implementation(libs.material)
+    implementation(libs.androidx.material3.v120)
+    implementation(libs.androidx.material3.window.size.class1)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
