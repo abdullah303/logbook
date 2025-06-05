@@ -151,10 +151,18 @@ fun ValueSelectionScreen(
                                         stiffness = Spring.StiffnessLow
                                     )
                                 )
-                                .clickable {
-                                    manualInput = ""
-                                    selectedValueState = value
-                                    onValueSelected(value)
+                                .clickable { 
+                                    if (!isSelected) {
+                                        // If not selected, just update highlight and center
+                                        manualInput = ""
+                                        selectedValueState = value
+                                        coroutineScope.launch {
+                                            listState.scrollToItem(index)
+                                        }
+                                    } else {
+                                        // If already selected, confirm selection
+                                        onValueSelected(value)
+                                    }
                                 },
                 colors = CardDefaults.cardColors(
                                 containerColor = if (isSelected)
