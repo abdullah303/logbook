@@ -22,9 +22,9 @@ fun EquipmentSelectionScreen(
     modifier: Modifier = Modifier
 ) {
     val equipmentOptions = listOf(
-        "Cables",
+        "Cable Stack",
         "Dumbbells",
-        "Machine",
+        "Resistance Machine",
         "Smith Machine",
         "Barbell",
         "Bodyweight",
@@ -68,11 +68,16 @@ fun EquipmentSelectionScreen(
                             MaterialTheme.colorScheme.surfaceContainerLowest
                     ),
                     onClick = {
-                        onEquipmentSelected(equipment)
-                        // Save to both previous and current back stack entries
-                        navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
-                        navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
-                        navController.navigateUp()
+                        if (equipment == "Cable Stack" || equipment == "Resistance Machine" || equipment == "Smith Machine") {
+                            navController.navigate(
+                                com.abdullah303.logbook.navigation.Screen.EquipmentList.createRoute(equipment)
+                            )
+                        } else {
+                            onEquipmentSelected(equipment)
+                            navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
+                            navController.navigateUp()
+                        }
                     }
                 ) {
                     Box(

@@ -47,8 +47,8 @@ data class ExerciseInstance(
 enum class EquipmentType {
     BARBELL,
     DUMBBELL,
-    CABLE,
-    MACHINE,
+    CABLE_STACK,
+    RESISTANCE_MACHINE,
     SMITH,
     BODYWEIGHT
 }
@@ -84,7 +84,7 @@ object DummyData {
             name = "Tricep Pushdown",
             primaryMuscle = "Triceps",
             secondaryMuscles = listOf("Chest", "Shoulders"),
-            equipmentType = EquipmentType.CABLE
+            equipmentType = EquipmentType.CABLE_STACK
         ),
         
         // Pull Exercises
@@ -104,7 +104,7 @@ object DummyData {
             name = "Face Pull",
             primaryMuscle = "Rear Deltoids",
             secondaryMuscles = listOf("Traps", "Rhomboids"),
-            equipmentType = EquipmentType.CABLE
+            equipmentType = EquipmentType.CABLE_STACK
         ),
         ExerciseTemplate(
             name = "Bicep Curl",
@@ -130,13 +130,13 @@ object DummyData {
             name = "Leg Press",
             primaryMuscle = "Quadriceps",
             secondaryMuscles = listOf("Glutes", "Hamstrings"),
-            equipmentType = EquipmentType.MACHINE
+            equipmentType = EquipmentType.RESISTANCE_MACHINE
         ),
         ExerciseTemplate(
             name = "Calf Raises",
             primaryMuscle = "Calves",
             secondaryMuscles = emptyList(),
-            equipmentType = EquipmentType.MACHINE
+            equipmentType = EquipmentType.RESISTANCE_MACHINE
         ),
         ExerciseTemplate(
             name = "Bulgarian Split Squat",

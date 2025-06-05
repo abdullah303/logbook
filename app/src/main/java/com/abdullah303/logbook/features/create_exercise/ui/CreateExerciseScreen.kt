@@ -134,10 +134,10 @@ fun CreateExerciseScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Icon(
-                                Icons.Default.Save,
+                        Icon(
+                            Icons.Default.Save,
                                 contentDescription = "Save Exercise"
-                            )
+                        )
                         }
                     }
                 }
@@ -202,18 +202,18 @@ fun CreateExerciseScreen(
                     }
                 }
                 
-                OutlinedTextField(
+            OutlinedTextField(
                     value = exercise.equipment,
-                    onValueChange = { },
+                onValueChange = { },
                     label = { Text("Equipment") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    singleLine = true,
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            Icons.Default.KeyboardArrowRight,
+                singleLine = true,
+                readOnly = true,
+                trailingIcon = {
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
                             contentDescription = "Select Equipment",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -251,21 +251,21 @@ fun CreateExerciseScreen(
                     LaunchedEffect(primaryMuscleInteractionSource) {
                         primaryMuscleInteractionSource.interactions.collect { interaction ->
                             if (interaction is PressInteraction.Release) {
-                                navController.navigate(Screen.PrimaryMuscleSelection.route)
+                                    navController.navigate(Screen.PrimaryMuscleSelection.route)
                             }
                         }
                     }
-                    
-                    OutlinedTextField(
+            
+            OutlinedTextField(
                         value = exercise.primaryMuscle,
-                        onValueChange = { },
+                onValueChange = { },
                         label = { Text("Primary Muscle") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                Icons.Default.KeyboardArrowRight,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                readOnly = true,
+                trailingIcon = {
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
                                 contentDescription = "Select Primary Muscle",
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -283,16 +283,16 @@ fun CreateExerciseScreen(
                     LaunchedEffect(auxiliaryMusclesInteractionSource) {
                         auxiliaryMusclesInteractionSource.interactions.collect { interaction ->
                             if (interaction is PressInteraction.Release) {
-                                navController.navigate(Screen.AuxillaryMuscleSelection.route)
+                                    navController.navigate(Screen.AuxillaryMuscleSelection.route)
                             }
                         }
                     }
-                    
-                    OutlinedTextField(
+            
+            OutlinedTextField(
                         value = exercise.auxiliaryMuscles,
                         onValueChange = { },
                         label = { Text("Auxiliary Muscles") },
-                        modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant

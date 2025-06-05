@@ -11,4 +11,10 @@ sealed class Screen(val route: String) {
     object AuxillaryMuscleSelection : Screen(NavRoutes.AUXILLARY_MUSCLE_SELECTION)
     object BodyweightSelection : Screen(NavRoutes.BODYWEIGHT_SELECTION)
     object EquipmentSelection : Screen("equipment_selection")
+    object EquipmentList : Screen("equipment_list/{equipmentType}") {
+        fun createRoute(equipmentType: String) = "equipment_list/$equipmentType"
+    }
+    object CreateEquipment : Screen("create_equipment/{equipmentType}") {
+        fun createRoute(equipmentType: String) = "create_equipment/$equipmentType"
+    }
 } 

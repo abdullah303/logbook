@@ -1,26 +1,27 @@
 package com.abdullah303.logbook.features.create_exercise.ui.bodyweight
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.abdullah303.logbook.core.components.ValueSelectionScreen
+import com.abdullah303.logbook.core.ui.components.ValueSelectionScreen
 
 @Composable
 fun BodyweightSelectionScreen(
     navController: NavController,
-    selectedPercentage: String = "",
-    onPercentageSelected: (String) -> Unit = {},
-    modifier: Modifier = Modifier
+    onPercentageSelected: (String) -> Unit
 ) {
+    // Generate percentage options from 0 to 100 in 5% increments
+    val valueOptions = (0..100 step 5).map { "$it" }
+
     ValueSelectionScreen(
         navController = navController,
-        title = "Bodyweight Contribution",
-        selectedValue = selectedPercentage,
+        title = "Select Bodyweight Percentage",
+        selectedValue = "0",
         unit = "%",
-        startValue = 0,
-        endValue = 100,
-        step = 5,
-        onValueSelected = onPercentageSelected,
-        modifier = modifier
+        valueOptions = valueOptions,
+        onValueSelected = { selectedValue ->
+            onPercentageSelected(selectedValue)
+            navController.previousBackStackEntry?.savedStateHandle?.set("selectedBodyweightPercentage", selectedValue)
+            navController.popBackStack()
+        }
     )
 } 
