@@ -1,5 +1,6 @@
 package com.abdullah303.logbook.features.splits.data
 
+import com.abdullah303.logbook.core.domain.model.EquipmentType
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -43,15 +44,6 @@ data class ExerciseInstance(
     val sets: Int,
     val order: Int
 )
-
-enum class EquipmentType {
-    BARBELL,
-    DUMBBELL,
-    CABLE_STACK,
-    RESISTANCE_MACHINE,
-    SMITH,
-    BODYWEIGHT
-}
 
 object DummyData {
     val exerciseTemplates = listOf(

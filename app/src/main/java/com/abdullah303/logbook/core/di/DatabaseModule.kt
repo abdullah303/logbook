@@ -2,8 +2,9 @@ package com.abdullah303.logbook.core.di
 
 import android.content.Context
 import androidx.room.Room
+import com.abdullah303.logbook.core.data.local.AppDatabase
+import com.abdullah303.logbook.core.data.local.EquipmentDao
 import com.abdullah303.logbook.core.data.local.ExerciseDao
-import com.abdullah303.logbook.core.data.local.ExerciseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,18 +18,23 @@ object DatabaseModule {
     
     @Provides
     @Singleton
-    fun provideExerciseDatabase(
+    fun provideAppDatabase(
         @ApplicationContext context: Context
-    ): ExerciseDatabase {
+    ): AppDatabase {
         return Room.databaseBuilder(
             context,
-            ExerciseDatabase::class.java,
-            ExerciseDatabase.DATABASE_NAME
+            AppDatabase::class.java,
+            AppDatabase.DATABASE_NAME
         ).build()
     }
     
     @Provides
-    fun provideExerciseDao(database: ExerciseDatabase): ExerciseDao {
+    fun provideExerciseDao(database: AppDatabase): ExerciseDao {
         return database.exerciseDao()
+    }
+    
+    @Provides
+    fun provideEquipmentDao(database: AppDatabase): EquipmentDao {
+        return database.equipmentDao()
     }
 } 

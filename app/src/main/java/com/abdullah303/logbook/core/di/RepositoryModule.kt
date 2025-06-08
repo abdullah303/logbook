@@ -1,6 +1,8 @@
 package com.abdullah303.logbook.core.di
 
+import com.abdullah303.logbook.core.data.repository.EquipmentRepositoryImpl
 import com.abdullah303.logbook.core.data.repository.ExerciseRepositoryImpl
+import com.abdullah303.logbook.core.domain.repository.EquipmentRepository
 import com.abdullah303.logbook.core.domain.repository.ExerciseRepository
 import dagger.Binds
 import dagger.Module
@@ -17,4 +19,10 @@ abstract class RepositoryModule {
     abstract fun bindExerciseRepository(
         exerciseRepositoryImpl: ExerciseRepositoryImpl
     ): ExerciseRepository
+    
+    @Binds
+    @Singleton
+    abstract fun bindEquipmentRepository(
+        equipmentRepositoryImpl: EquipmentRepositoryImpl
+    ): EquipmentRepository
 } 

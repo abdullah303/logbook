@@ -21,4 +21,16 @@ sealed class Screen(val route: String) {
         fun createRoute(min: String, max: String, interval: String, unit: String) = 
             "weight_selection/$min/$max/$interval/$unit"
     }
+    object MinWeightSelection : Screen("min_weight_selection/{max}/{step}/{unit}/{currentValue}") {
+        fun createRoute(max: String, step: String, unit: String, currentValue: String) = 
+            "min_weight_selection/$max/$step/$unit/$currentValue"
+    }
+    object MaxWeightSelection : Screen("max_weight_selection/{min}/{step}/{unit}/{currentValue}") {
+        fun createRoute(min: String, step: String, unit: String, currentValue: String) = 
+            "max_weight_selection/$min/$step/$unit/$currentValue"
+    }
+    object StepWeightSelection : Screen("step_weight_selection/{unit}/{currentValue}") {
+        fun createRoute(unit: String, currentValue: String) = 
+            "step_weight_selection/$unit/$currentValue"
+    }
 } 

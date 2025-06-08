@@ -15,6 +15,9 @@ import com.abdullah303.logbook.features.create_exercise.ui.equipment.EquipmentSe
 import com.abdullah303.logbook.features.create_equipment.ui.CreateEquipmentScreen
 import com.abdullah303.logbook.features.create_equipment.ui.EquipmentListScreen
 import com.abdullah303.logbook.core.ui.components.WeightSelectionScreen
+import com.abdullah303.logbook.core.ui.components.MinWeightSelectionScreen
+import com.abdullah303.logbook.core.ui.components.MaxWeightSelectionScreen
+import com.abdullah303.logbook.core.ui.components.StepWeightSelectionScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -155,6 +158,104 @@ fun NavGraph(navController: NavHostController) {
                 max = max,
                 interval = interval,
                 unit = unit,
+                onWeightSelected = { selectedWeight ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selectedWeight", selectedWeight)
+                }
+            )
+        }
+
+        composable(
+            route = Screen.MinWeightSelection.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("max") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("step") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("unit") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("currentValue") {
+                    type = androidx.navigation.NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val max = backStackEntry.arguments?.getString("max") ?: "100"
+            val step = backStackEntry.arguments?.getString("step") ?: "5"
+            val unit = backStackEntry.arguments?.getString("unit") ?: "kg"
+            val currentValue = backStackEntry.arguments?.getString("currentValue") ?: "0"
+            
+            MinWeightSelectionScreen(
+                navController = navController,
+                max = max,
+                step = step,
+                unit = unit,
+                currentValue = currentValue,
+                onWeightSelected = { selectedWeight ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selectedWeight", selectedWeight)
+                }
+            )
+        }
+
+        composable(
+            route = Screen.MaxWeightSelection.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("min") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("step") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("unit") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("currentValue") {
+                    type = androidx.navigation.NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val min = backStackEntry.arguments?.getString("min") ?: "0"
+            val step = backStackEntry.arguments?.getString("step") ?: "5"
+            val unit = backStackEntry.arguments?.getString("unit") ?: "kg"
+            val currentValue = backStackEntry.arguments?.getString("currentValue") ?: "0"
+            
+            MaxWeightSelectionScreen(
+                navController = navController,
+                min = min,
+                step = step,
+                unit = unit,
+                currentValue = currentValue,
+                onWeightSelected = { selectedWeight ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selectedWeight", selectedWeight)
+                }
+            )
+        }
+
+        composable(
+            route = Screen.StepWeightSelection.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("unit") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("currentValue") {
+                    type = androidx.navigation.NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val unit = backStackEntry.arguments?.getString("unit") ?: "kg"
+            val currentValue = backStackEntry.arguments?.getString("currentValue") ?: "0"
+            
+            StepWeightSelectionScreen(
+                navController = navController,
+                unit = unit,
+                currentValue = currentValue,
                 onWeightSelected = { selectedWeight ->
                     navController.previousBackStackEntry
                         ?.savedStateHandle

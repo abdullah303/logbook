@@ -325,6 +325,7 @@ fun CreateExerciseScreen(
                 LaunchedEffect(bodyweightInteractionSource) {
                     bodyweightInteractionSource.interactions.collect { interaction ->
                         if (interaction is PressInteraction.Release) {
+                            navController.currentBackStackEntry?.savedStateHandle?.set("selectedBodyweightPercentage", exercise.bodyweightContribution)
                             navController.navigate(Screen.BodyweightSelection.route)
                         }
                     }

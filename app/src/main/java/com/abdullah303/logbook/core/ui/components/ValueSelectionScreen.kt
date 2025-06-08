@@ -49,6 +49,13 @@ fun ValueSelectionScreen(
         if (selectedValue.isNotEmpty() && !valueOptions.contains(selectedValue)) {
             manualInput = selectedValue
         }
+        // Scroll to the selected value when the screen first appears
+        val index = valueOptions.indexOf(selectedValue)
+        if (index != -1) {
+            coroutineScope.launch {
+                listState.scrollToItem(index)
+            }
+        }
     }
 
     // Update highlighted value based on scroll position with smooth animation

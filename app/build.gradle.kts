@@ -80,6 +80,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation(libs.gson)
+
     implementation("androidx.compose.ui:ui-text-google-fonts:1.6.1")
     implementation(libs.androidx.compose.foundation)
 }
