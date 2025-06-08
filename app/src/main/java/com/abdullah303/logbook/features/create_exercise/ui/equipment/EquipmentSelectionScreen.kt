@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.abdullah303.logbook.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +71,7 @@ fun EquipmentSelectionScreen(
                     onClick = {
                         if (equipment == "Cable Stack" || equipment == "Resistance Machine" || equipment == "Smith Machine") {
                             navController.navigate(
-                                com.abdullah303.logbook.navigation.Screen.EquipmentList.createRoute(equipment)
+                                Screen.EquipmentList.createRoute(equipment)
                             )
                         } else {
                             onEquipmentSelected(equipment)

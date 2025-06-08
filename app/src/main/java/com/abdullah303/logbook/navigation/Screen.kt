@@ -17,4 +17,8 @@ sealed class Screen(val route: String) {
     object CreateEquipment : Screen("create_equipment/{equipmentType}") {
         fun createRoute(equipmentType: String) = "create_equipment/$equipmentType"
     }
+    object WeightSelection : Screen("weight_selection/{min}/{max}/{interval}/{unit}") {
+        fun createRoute(min: String, max: String, interval: String, unit: String) = 
+            "weight_selection/$min/$max/$interval/$unit"
+    }
 } 

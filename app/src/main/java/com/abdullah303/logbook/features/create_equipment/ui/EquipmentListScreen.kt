@@ -79,7 +79,11 @@ fun EquipmentListScreen(
         itemContent = { equipment ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { /* TODO: Handle equipment click */ }
+                onClick = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
+                    navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
+                    navController.navigateUp()
+                }
             ) {
                 Box(
                     modifier = Modifier

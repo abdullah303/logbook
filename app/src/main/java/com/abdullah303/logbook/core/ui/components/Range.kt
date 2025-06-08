@@ -1,5 +1,6 @@
 package com.abdullah303.logbook.core.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -10,8 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.abdullah303.logbook.core.ui.components.SelectablePillTextField
-import kotlin.math.abs
+import com.abdullah303.logbook.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,39 +25,6 @@ fun Range(
     val weightUnits = listOf("lb", "kg")
     val weightUnit = weightUnits[weightUnitIndex]
 
-    // Initialize ranges with default values
-    LaunchedEffect(Unit) {
-        if (ranges.isEmpty()) {
-            onRangesChange(listOf(Triple("0", "1000", "2.5")))
-        }
-    }
-
-    // Handle selected value from WeightSelectionScreen
-    LaunchedEffect(Unit) {
-        navController.currentBackStackEntry?.savedStateHandle?.get<String>("selected_value")?.let { selectedValue ->
-            // Find which field was selected and update it
-            val currentRanges = ranges.toMutableList()
-            val selectedField = navController.currentBackStackEntry?.savedStateHandle?.get<String>("selected_field")
-            val selectedIndex = navController.currentBackStackEntry?.savedStateHandle?.get<Int>("selected_index") ?: 0
-            
-            if (currentRanges.isNotEmpty() && selectedField != null) {
-                val (min, max, interval) = currentRanges[selectedIndex]
-                currentRanges[selectedIndex] = when (selectedField) {
-                    "min" -> Triple(selectedValue, max, interval)
-                    "max" -> Triple(min, selectedValue, interval)
-                    "interval" -> Triple(min, max, selectedValue)
-                    else -> Triple(min, max, interval)
-                }
-                onRangesChange(currentRanges)
-            }
-            
-            // Clear the saved state
-            navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selected_value")
-            navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selected_field")
-            navController.currentBackStackEntry?.savedStateHandle?.remove<Int>("selected_index")
-        }
-    }
-
     Card(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -67,12 +34,12 @@ fun Range(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Range",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f)
+                    text = "Ranges",
+                    style = MaterialTheme.typography.titleMedium
                 )
                 SingleChoiceSegmentedButtonRow {
                     weightUnits.forEachIndexed { index, label ->
@@ -89,24 +56,39 @@ fun Range(
                 }
             }
 
-            // Centered headings
+            // Headings row
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    Text("Min", style = MaterialTheme.typography.titleMedium)
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Min",
+                        style = MaterialTheme.typography.titleSmall
+                    )
                 }
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    Text("Max", style = MaterialTheme.typography.titleMedium)
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Max",
+                        style = MaterialTheme.typography.titleSmall
+                    )
                 }
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    Text("Interval", style = MaterialTheme.typography.titleMedium)
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Step",
+                        style = MaterialTheme.typography.titleSmall
+                    )
                 }
-                Spacer(Modifier.size(48.dp)) // Space for delete button
+                Spacer(modifier = Modifier.width(48.dp)) // Space for delete button
             }
 
             ranges.forEachIndexed { index, (min, max, interval) ->
@@ -115,62 +97,92 @@ fun Range(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    SelectablePillTextField(
-                        value = "$min $weightUnit",
-                        onSelect = {
-                            navController.currentBackStackEntry?.savedStateHandle?.set("selected_field", "min")
-                            navController.currentBackStackEntry?.savedStateHandle?.set("selected_index", index)
-                            navController.navigate("weight_selection/$min/$max/$interval/$weightUnit") { 
-                                launchSingleTop = true 
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                navController.navigate(
+                                    Screen.WeightSelection.createRoute(min, max, interval, weightUnit)
+                                )
                             }
-                        },
-                        label = { Text("Min") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    SelectablePillTextField(
-                        value = "$max $weightUnit",
-                        onSelect = {
-                            navController.currentBackStackEntry?.savedStateHandle?.set("selected_field", "max")
-                            navController.currentBackStackEntry?.savedStateHandle?.set("selected_index", index)
-                            navController.navigate("weight_selection/$min/$max/$interval/$weightUnit") { 
-                                launchSingleTop = true 
+                    ) {
+                        OutlinedTextField(
+                            value = min,
+                            onValueChange = { },
+                            label = { Text("Min") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            enabled = false
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                navController.navigate(
+                                    Screen.WeightSelection.createRoute(min, max, interval, weightUnit)
+                                )
                             }
-                        },
-                        label = { Text("Max") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    SelectablePillTextField(
-                        value = "$interval $weightUnit",
-                        onSelect = {
-                            navController.currentBackStackEntry?.savedStateHandle?.set("selected_field", "interval")
-                            navController.currentBackStackEntry?.savedStateHandle?.set("selected_index", index)
-                            navController.navigate("weight_selection/0/1000/$interval/$weightUnit") { 
-                                launchSingleTop = true 
+                    ) {
+                        OutlinedTextField(
+                            value = max,
+                            onValueChange = { },
+                            label = { Text("Max") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            enabled = false
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                navController.navigate(
+                                    Screen.WeightSelection.createRoute(min, max, interval, weightUnit)
+                                )
                             }
-                        },
-                        label = { Text("Interval") },
-                        modifier = Modifier.weight(1f)
-                    )
+                    ) {
+                        OutlinedTextField(
+                            value = interval,
+                            onValueChange = { },
+                            label = { Text("Step") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            enabled = false
+                        )
+                    }
+
                     IconButton(
                         onClick = {
-                            val newRanges = ranges.toMutableList()
-                            newRanges.removeAt(index)
-                            onRangesChange(newRanges)
+                            val updatedRanges = ranges.toMutableList()
+                            updatedRanges.removeAt(index)
+                            onRangesChange(updatedRanges)
                         }
                     ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete Range")
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete Range",
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }
 
             Button(
                 onClick = {
-                    onRangesChange(ranges + Triple("0", "1000", "2.5"))
+                    val updatedRanges = ranges.toMutableList()
+                    updatedRanges.add(Triple("", "", ""))
+                    onRangesChange(updatedRanges)
                 },
-                modifier = Modifier.align(Alignment.End)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Range")
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Add Range"
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text("Add Range")
             }
         }

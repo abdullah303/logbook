@@ -2,47 +2,35 @@ package com.abdullah303.logbook.core.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import kotlin.math.abs
+import com.abdullah303.logbook.core.ui.components.ValueSelectionScreen
 
 @Composable
 fun WeightSelectionScreen(
     navController: NavController,
     min: String,
     max: String,
-    increment: String,
+    interval: String,
     unit: String,
-    onValueSelected: (String) -> Unit
+    onWeightSelected: (String) -> Unit
 ) {
+    // Generate weight options from min to max in interval increments
     val minValue = min.toFloatOrNull() ?: 0f
-    val maxValue = max.toFloatOrNull() ?: 1000f
-    val incrementValue = increment.toFloatOrNull() ?: 2.5f
-
-    // Calculate decimal places from increment
-    val decimalPlaces = incrementValue.toString().let { str ->
-        if (str.contains(".")) {
-            str.substringAfter(".").length
-        } else {
-            0
-        }
-    }
-
-    // Generate value options from start to end in step increments
-    val valueOptions = generateSequence(minValue) { it + incrementValue }
+    val maxValue = max.toFloatOrNull() ?: 100f
+    val intervalValue = interval.toFloatOrNull() ?: 5f
+    val valueOptions = generateSequence(minValue) { it + intervalValue }
         .takeWhile { it <= maxValue }
-        .map { 
-            String.format("%.${decimalPlaces}f", it)
-        }
+        .map { it.toString() }
         .toList()
 
     ValueSelectionScreen(
         navController = navController,
         title = "Select Weight",
-        selectedValue = "",
+        selectedValue = min,
         unit = unit,
         valueOptions = valueOptions,
         onValueSelected = { selectedValue ->
-            onValueSelected(selectedValue)
-            navController.previousBackStackEntry?.savedStateHandle?.set("selected_value", selectedValue)
+            onWeightSelected(selectedValue)
+            navController.previousBackStackEntry?.savedStateHandle?.set("selectedWeight", selectedValue)
             navController.popBackStack()
         }
     )

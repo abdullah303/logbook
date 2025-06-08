@@ -12,6 +12,9 @@ import com.abdullah303.logbook.features.create_exercise.ui.muscle.MuscleSelectio
 import com.abdullah303.logbook.features.create_exercise.ui.bodyweight.BodyweightSelectionScreen
 import com.abdullah303.logbook.features.splits.ui.SplitsScreen
 import com.abdullah303.logbook.features.create_exercise.ui.equipment.EquipmentSelectionScreen
+import com.abdullah303.logbook.features.create_equipment.ui.CreateEquipmentScreen
+import com.abdullah303.logbook.features.create_equipment.ui.EquipmentListScreen
+import com.abdullah303.logbook.core.ui.components.WeightSelectionScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -92,6 +95,72 @@ fun NavGraph(navController: NavHostController) {
         
         composable(Screen.Settings.route) {
             // TODO: Add Settings screen
+        }
+
+        composable(
+            route = Screen.EquipmentList.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("equipmentType") {
+                    type = androidx.navigation.NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val equipmentType = backStackEntry.arguments?.getString("equipmentType") ?: ""
+            EquipmentListScreen(
+                navController = navController,
+                equipmentType = equipmentType
+            )
+        }
+
+        composable(
+            route = Screen.CreateEquipment.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("equipmentType") {
+                    type = androidx.navigation.NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val equipmentType = backStackEntry.arguments?.getString("equipmentType") ?: ""
+            CreateEquipmentScreen(
+                navController = navController,
+                equipmentType = equipmentType
+            )
+        }
+
+        composable(
+            route = Screen.WeightSelection.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("min") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("max") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("interval") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("unit") {
+                    type = androidx.navigation.NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val min = backStackEntry.arguments?.getString("min") ?: "0"
+            val max = backStackEntry.arguments?.getString("max") ?: "100"
+            val interval = backStackEntry.arguments?.getString("interval") ?: "5"
+            val unit = backStackEntry.arguments?.getString("unit") ?: "kg"
+            
+            WeightSelectionScreen(
+                navController = navController,
+                min = min,
+                max = max,
+                interval = interval,
+                unit = unit,
+                onWeightSelected = { selectedWeight ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selectedWeight", selectedWeight)
+                }
+            )
         }
     }
 } 

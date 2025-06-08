@@ -201,26 +201,26 @@ fun ValueSelectionScreen(
             }
 
             // Manual input field at the bottom
-            PillTextField(
-                        value = manualInput,
+            OutlinedTextField(
+                value = manualInput,
                 onValueChange = {
                     manualInput = it
                     if (it.isNotEmpty() && valueOptions.contains(it)) {
                         selectedValueState = it
                     } else {
-                                selectedValueState = ""
-                            }
-                        },
+                        selectedValueState = ""
+                    }
+                },
                 label = { Text("Manual Input") },
-                        modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 trailingIcon = {
                     if (manualInput.isNotEmpty()) {
                         IconButton(onClick = { onValueSelected(manualInput) }) {
                             Icon(Icons.Default.Check, contentDescription = "Confirm")
+                        }
                     }
                 }
-            }
             )
         }
     }
