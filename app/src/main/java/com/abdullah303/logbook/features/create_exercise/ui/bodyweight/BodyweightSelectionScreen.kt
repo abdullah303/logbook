@@ -9,8 +9,9 @@ fun BodyweightSelectionScreen(
     navController: NavController,
     onPercentageSelected: (Float) -> Unit
 ) {
-    // Get the current value from the saved state handle
-    val currentValue = navController.previousBackStackEntry?.savedStateHandle?.get<Float>("selectedBodyweightPercentage") ?: 0f
+    // Get the current value from the saved state handle as a string and convert to float
+    val currentValueStr = navController.previousBackStackEntry?.savedStateHandle?.get<String>("selectedBodyweightPercentage") ?: "0"
+    val currentValue = currentValueStr.toFloatOrNull() ?: 0f
 
     // Generate percentage options from 0 to 100 in 5% increments
     val valueOptions = (0..100 step 5).map { it.toFloat() }
@@ -25,7 +26,7 @@ fun BodyweightSelectionScreen(
             onPercentageSelected(selectedValue)
             navController.previousBackStackEntry?.savedStateHandle?.set(
                 "selectedBodyweightPercentage",
-                selectedValue
+                selectedValue.toString()
             )
             navController.popBackStack()
         }
