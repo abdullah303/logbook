@@ -36,12 +36,16 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.ui.semantics.semantics
 import com.abdullah303.logbook.core.ui.components.FilterOption
 import com.abdullah303.logbook.core.ui.components.FilterableListScreen
+import com.abdullah303.logbook.features.create_equipment.presentation.EquipmentListViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.abdullah303.logbook.core.domain.model.EquipmentType
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EquipmentListScreen(
     navController: NavController,
     equipmentType: String,
+    viewModel: EquipmentListViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
     val equipmentTypes = listOf("Cable Stack", "Resistance Machine", "Smith Machine")
@@ -59,15 +63,9 @@ fun EquipmentListScreen(
     var selectedIndex by remember { mutableStateOf(initialSelectedIndex) }
     var searchQuery by remember { mutableStateOf("") }
 
-    // Dummy equipment list for now
-    val allEquipment = listOf(
-        "Cable Row", "Lat Pulldown", "Triceps Rope", "Machine Chest Press", "Smith Bench Press"
-    )
-    val filteredEquipment = remember(selectedIndex, searchQuery, allEquipment) {
-        allEquipment.filter {
-            it.contains(equipmentTypes[selectedIndex].removeSuffix("s"), ignoreCase = true) &&
-            it.contains(searchQuery, ignoreCase = true)
-        }
+    val uiState by viewModel.uiState.collectAsState()
+    val filteredEquipment = remember(selectedIndex, searchQuery, uiState.equipment) {
+        viewModel.filterEquipment(equipmentTypes[selectedIndex], searchQuery)
     }
 
     FilterableListScreen(
@@ -80,8 +78,7 @@ fun EquipmentListScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
-                    navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
+                    navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment.id)
                     navController.navigateUp()
                 }
             ) {
@@ -91,7 +88,7 @@ fun EquipmentListScreen(
                         .padding(16.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    Text(equipment)
+                    Text(equipment.name)
                 }
             }
         },
@@ -102,6 +99,8 @@ fun EquipmentListScreen(
         },
         modifier = modifier,
         searchQuery = searchQuery,
-        onSearchQueryChange = { searchQuery = it }
+        onSearchQueryChange = { searchQuery = it },
+        isLoading = uiState.isLoading,
+        error = uiState.error
     )
 } 

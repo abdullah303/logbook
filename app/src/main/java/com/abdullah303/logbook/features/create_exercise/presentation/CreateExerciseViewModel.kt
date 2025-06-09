@@ -3,6 +3,7 @@ package com.abdullah303.logbook.features.create_exercise.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abdullah303.logbook.core.domain.model.Exercise
+import com.abdullah303.logbook.core.domain.repository.EquipmentRepository
 import com.abdullah303.logbook.core.domain.repository.ExerciseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,15 +11,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateExerciseViewModel @Inject constructor(
-    private val repository: ExerciseRepository
+    private val exerciseRepository: ExerciseRepository,
+    private val equipmentRepository: EquipmentRepository
 ) : ViewModel() {
 
     private val _exercise = MutableStateFlow(Exercise())
     val exercise: StateFlow<Exercise> = _exercise.asStateFlow()
+
+    private val _equipmentName = MutableStateFlow("")
+    val equipmentName: StateFlow<String> = _equipmentName.asStateFlow()
 
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
@@ -28,15 +34,36 @@ class CreateExerciseViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.getCurrentExercise().collect { exercise ->
+            exerciseRepository.getCurrentExercise().collect { exercise ->
                 _exercise.value = exercise
+                updateEquipmentName(exercise.equipment)
             }
+        }
+    }
+
+    private fun updateEquipmentName(equipmentIdentifier: String) {
+        viewModelScope.launch {
+            if (isValidUUID(equipmentIdentifier)) {
+                val equipment = equipmentRepository.getEquipmentById(equipmentIdentifier)
+                _equipmentName.value = equipment?.name ?: ""
+            } else {
+                _equipmentName.value = equipmentIdentifier
+            }
+        }
+    }
+
+    private fun isValidUUID(uuid: String): Boolean {
+        return try {
+            UUID.fromString(uuid)
+            true
+        } catch (e: IllegalArgumentException) {
+            false
         }
     }
 
     fun updateExercise(exercise: Exercise) {
         viewModelScope.launch {
-            repository.updateExercise(exercise)
+            exerciseRepository.updateExercise(exercise)
         }
     }
 
@@ -76,10 +103,10 @@ class CreateExerciseViewModel @Inject constructor(
         viewModelScope.launch {
             _isSaving.value = true
             try {
-                repository.saveExercise(currentExercise)
+                exerciseRepository.saveExercise(currentExercise)
                 _saveResult.value = SaveResult.Success
                 // Clear the current exercise after saving
-                repository.clearExercise()
+                exerciseRepository.clearExercise()
             } catch (e: Exception) {
                 _saveResult.value = SaveResult.Error("Failed to save exercise: ${e.message}")
             } finally {
@@ -94,7 +121,7 @@ class CreateExerciseViewModel @Inject constructor(
 
     fun clearExercise() {
         viewModelScope.launch {
-            repository.clearExercise()
+            exerciseRepository.clearExercise()
         }
     }
 }

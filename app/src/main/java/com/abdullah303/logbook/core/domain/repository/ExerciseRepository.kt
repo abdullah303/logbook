@@ -17,6 +17,6 @@ interface ExerciseRepository {
     suspend fun deleteExerciseById(id: String)
     fun searchExercises(searchQuery: String): Flow<List<Exercise>>
     fun getExercisesByPrimaryMuscle(muscle: String): Flow<List<Exercise>>
-    fun getExercisesByEquipment(equipment: String): Flow<List<Exercise>>
+    fun getExercisesByEquipmentId(equipmentId: String): Flow<List<Exercise>>
     suspend fun getExerciseCount(): Int
 } 

@@ -31,6 +31,7 @@ fun CreateExerciseScreen(
     viewModel: CreateExerciseViewModel = hiltViewModel()
 ) {
     val exercise by viewModel.exercise.collectAsStateWithLifecycle()
+    val equipmentName by viewModel.equipmentName.collectAsStateWithLifecycle()
     val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     val saveResult by viewModel.saveResult.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -203,7 +204,7 @@ fun CreateExerciseScreen(
                 }
                 
             OutlinedTextField(
-                    value = exercise.equipment,
+                    value = equipmentName,
                 onValueChange = { },
                     label = { Text("Equipment") },
                     modifier = Modifier

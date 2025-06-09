@@ -29,7 +29,9 @@ fun <T> FilterableListScreen(
     fabContent: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     searchQuery: String = "",
-    onSearchQueryChange: (String) -> Unit = {}
+    onSearchQueryChange: (String) -> Unit = {},
+    isLoading: Boolean = false,
+    error: String? = null
 ) {
     var selectedIndex by remember { mutableStateOf(selectedFilterIndex) }
     val scrollState = rememberScrollState()
@@ -95,13 +97,39 @@ fun <T> FilterableListScreen(
                 }
             }
             Divider()
-            LazyColumn(
+
+            Box(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                contentAlignment = Alignment.Center
             ) {
-                items(items) { item ->
-                    itemContent(item)
+                when {
+                    isLoading -> {
+                        CircularProgressIndicator()
+                    }
+                    error != null -> {
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    items.isEmpty() -> {
+                        Text(
+                            text = "No items found",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(items) { item ->
+                                itemContent(item)
+                            }
+                        }
+                    }
                 }
             }
         }

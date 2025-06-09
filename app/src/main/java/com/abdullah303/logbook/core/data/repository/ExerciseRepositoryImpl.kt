@@ -32,8 +32,8 @@ class ExerciseRepositoryImpl @Inject constructor(
     
     // Database operations for permanent storage
     override fun getAllExercises(): Flow<List<Exercise>> {
-        return exerciseDao.getAllExercises().map { entities ->
-            entities.map { it.toDomainModel() }
+        return exerciseDao.getAllExercises().map { exerciseWithEquipmentList ->
+            exerciseWithEquipmentList.map { it.toDomainModel() }
         }
     }
     
@@ -54,20 +54,20 @@ class ExerciseRepositoryImpl @Inject constructor(
     }
     
     override fun searchExercises(searchQuery: String): Flow<List<Exercise>> {
-        return exerciseDao.searchExercises(searchQuery).map { entities ->
-            entities.map { it.toDomainModel() }
+        return exerciseDao.searchExercises(searchQuery).map { exerciseWithEquipmentList ->
+            exerciseWithEquipmentList.map { it.toDomainModel() }
         }
     }
     
     override fun getExercisesByPrimaryMuscle(muscle: String): Flow<List<Exercise>> {
-        return exerciseDao.getExercisesByPrimaryMuscle(muscle).map { entities ->
-            entities.map { it.toDomainModel() }
+        return exerciseDao.getExercisesByPrimaryMuscle(muscle).map { exerciseWithEquipmentList ->
+            exerciseWithEquipmentList.map { it.toDomainModel() }
         }
     }
     
-    override fun getExercisesByEquipment(equipment: String): Flow<List<Exercise>> {
-        return exerciseDao.getExercisesByEquipment(equipment).map { entities ->
-            entities.map { it.toDomainModel() }
+    override fun getExercisesByEquipmentId(equipmentId: String): Flow<List<Exercise>> {
+        return exerciseDao.getExercisesByEquipmentId(equipmentId).map { exerciseWithEquipmentList ->
+            exerciseWithEquipmentList.map { it.toDomainModel() }
         }
     }
     

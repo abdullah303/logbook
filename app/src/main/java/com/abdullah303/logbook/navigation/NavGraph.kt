@@ -42,18 +42,8 @@ fun NavGraph(navController: NavHostController) {
         }
         
         composable(Screen.EquipmentSelection.route) {
-            val selectedEquipment = navController.previousBackStackEntry
-                ?.savedStateHandle
-                ?.get<String>("selectedEquipment") ?: ""
-                
             EquipmentSelectionScreen(
-                navController = navController,
-                selectedEquipment = selectedEquipment,
-                onEquipmentSelected = { equipment ->
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("selectedEquipment", equipment)
-                }
+                navController = navController
             )
         }
         

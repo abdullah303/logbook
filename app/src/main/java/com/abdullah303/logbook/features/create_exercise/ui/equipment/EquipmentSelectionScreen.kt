@@ -13,13 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.abdullah303.logbook.navigation.Screen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EquipmentSelectionScreen(
     navController: NavController,
-    selectedEquipment: String,
-    onEquipmentSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val equipmentOptions = listOf(
@@ -32,7 +31,27 @@ fun EquipmentSelectionScreen(
         "Resistance Band",
         "Plate"
     )
-    
+
+    val selectedEquipmentFromList by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("selectedEquipment", "")
+        ?.collectAsStateWithLifecycle() ?: mutableStateOf("")
+
+    LaunchedEffect(selectedEquipmentFromList) {
+        if (selectedEquipmentFromList.isNotEmpty()) {
+            // Pass the result to the previous screen (CreateExerciseScreen)
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("selectedEquipment", selectedEquipmentFromList)
+            // Reset the value in the current screen's SavedStateHandle to avoid re-triggering
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.set("selectedEquipment", "")
+            // Navigate back to CreateExerciseScreen
+            navController.popBackStack()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,10 +82,7 @@ fun EquipmentSelectionScreen(
                         .fillMaxWidth()
                         .aspectRatio(1.5f),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (equipment == selectedEquipment)
-                            MaterialTheme.colorScheme.primaryContainer
-                        else
-                            MaterialTheme.colorScheme.surfaceContainerLowest
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                     ),
                     onClick = {
                         if (equipment == "Cable Stack" || equipment == "Resistance Machine" || equipment == "Smith Machine") {
@@ -74,9 +90,7 @@ fun EquipmentSelectionScreen(
                                 Screen.EquipmentList.createRoute(equipment)
                             )
                         } else {
-                            onEquipmentSelected(equipment)
                             navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
-                            navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
                             navController.navigateUp()
                         }
                     }
@@ -88,10 +102,7 @@ fun EquipmentSelectionScreen(
                         Text(
                             text = equipment,
                             style = MaterialTheme.typography.titleMedium,
-                            color = if (equipment == selectedEquipment)
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }

@@ -6,20 +6,48 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExerciseDao {
     
-    @Query("SELECT * FROM exercises ORDER BY name ASC")
-    fun getAllExercises(): Flow<List<ExerciseEntity>>
+    @Query(
+        "SELECT exercises.*, equipment.name AS equipmentName " +
+                "FROM exercises " +
+                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "ORDER BY exercises.name ASC"
+    )
+    fun getAllExercises(): Flow<List<ExerciseWithEquipment>>
     
-    @Query("SELECT * FROM exercises WHERE id = :id")
-    suspend fun getExerciseById(id: String): ExerciseEntity?
+    @Query(
+        "SELECT exercises.*, equipment.name AS equipmentName " +
+                "FROM exercises " +
+                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "WHERE exercises.id = :id"
+    )
+    suspend fun getExerciseById(id: String): ExerciseWithEquipment?
     
-    @Query("SELECT * FROM exercises WHERE name LIKE '%' || :searchQuery || '%' ORDER BY name ASC")
-    fun searchExercises(searchQuery: String): Flow<List<ExerciseEntity>>
+    @Query(
+        "SELECT exercises.*, equipment.name AS equipmentName " +
+                "FROM exercises " +
+                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "WHERE exercises.name LIKE '%' || :searchQuery || '%' " +
+                "ORDER BY exercises.name ASC"
+    )
+    fun searchExercises(searchQuery: String): Flow<List<ExerciseWithEquipment>>
     
-    @Query("SELECT * FROM exercises WHERE primaryMuscle = :muscle ORDER BY name ASC")
-    fun getExercisesByPrimaryMuscle(muscle: String): Flow<List<ExerciseEntity>>
+    @Query(
+        "SELECT exercises.*, equipment.name AS equipmentName " +
+                "FROM exercises " +
+                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "WHERE exercises.primaryMuscle = :muscle " +
+                "ORDER BY exercises.name ASC"
+    )
+    fun getExercisesByPrimaryMuscle(muscle: String): Flow<List<ExerciseWithEquipment>>
     
-    @Query("SELECT * FROM exercises WHERE equipment = :equipment ORDER BY name ASC")
-    fun getExercisesByEquipment(equipment: String): Flow<List<ExerciseEntity>>
+    @Query(
+        "SELECT exercises.*, equipment.name AS equipmentName " +
+                "FROM exercises " +
+                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "WHERE exercises.equipmentId = :equipmentId " +
+                "ORDER BY exercises.name ASC"
+    )
+    fun getExercisesByEquipmentId(equipmentId: String): Flow<List<ExerciseWithEquipment>>
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercise(exercise: ExerciseEntity)
