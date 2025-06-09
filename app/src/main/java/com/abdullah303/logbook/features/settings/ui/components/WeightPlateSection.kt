@@ -5,14 +5,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.abdullah303.logbook.features.settings.ui.components.WeightPlateSelector
 
 @Composable
 fun WeightPlateSection(
     modifier: Modifier = Modifier
 ) {
-    val plates = listOf(1.25, 2.5, 5.0, 10.0, 15.0, 20.0, 25.0)
-    var enabledPlates by remember { mutableStateOf(plates.map { it to false }.toMap()) }
+    val plates = listOf(1.25f, 2.5f, 5.0f, 10.0f, 15.0f, 20.0f, 25.0f)
+    var enabledPlates by remember { mutableStateOf(plates.associateWith { false }) }
 
     Card(
         modifier = modifier

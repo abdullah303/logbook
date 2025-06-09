@@ -67,7 +67,7 @@ class CreateEquipmentViewModel @Inject constructor(
         // Don't call updateEquipment here to prevent navigation issues
     }
 
-    fun updateMachineWeight(weight: String) {
+    fun updateMachineWeight(weight: Float) {
         _equipment.update { it.copy(machineWeight = weight) }
         updateEquipment(_equipment.value)
     }
@@ -77,7 +77,7 @@ class CreateEquipmentViewModel @Inject constructor(
         updateEquipment(_equipment.value)
     }
 
-    fun updateBarWeight(weight: String) {
+    fun updateBarWeight(weight: Float) {
         _equipment.update { it.copy(barWeight = weight) }
         updateEquipment(_equipment.value)
     }

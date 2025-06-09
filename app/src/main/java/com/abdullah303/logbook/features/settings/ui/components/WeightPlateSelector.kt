@@ -2,7 +2,6 @@ package com.abdullah303.logbook.features.settings.ui.components
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,8 +22,8 @@ import com.abdullah303.logbook.R
 
 @Composable
 fun WeightPlateSelector(
-    enabledPlates: Map<Double, Boolean>,
-    onPlateToggle: (Double) -> Unit,
+    enabledPlates: Map<Float, Boolean>,
+    onPlateToggle: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -32,13 +31,13 @@ fun WeightPlateSelector(
 
     // Standard Olympic plate colors
     val plateColors = mapOf(
-        1.25 to Color(0xFF9E9E9E), // Gray
-        2.5 to Color(0xFF000000),  // Black
-        5.0 to Color(0xFFFFFFFF),  // White
-        10.0 to Color(0xFF4CAF50), // Green
-        15.0 to Color(0xFFFFFF00), // Yellow
-        20.0 to Color(0xFF2196F3), // Blue
-        25.0 to Color(0xFFF44336)  // Red
+        1.25f to Color(0xFF9E9E9E), // Gray
+        2.5f to Color(0xFF000000),  // Black
+        5.0f to Color(0xFFFFFFFF),  // White
+        10.0f to Color(0xFF4CAF50), // Green
+        15.0f to Color(0xFFFFFF00), // Yellow
+        20.0f to Color(0xFF2196F3), // Blue
+        25.0f to Color(0xFFF44336)  // Red
     )
 
     Column(modifier = modifier) {
@@ -79,7 +78,7 @@ fun WeightPlateSelector(
                 // Calculate total width needed for all plates
                 var totalWidth = 0f
                 enabledPlatesList.forEach { weight ->
-                    val thickness = (weight.toFloat() / 25f) * scale * 0.15f
+                    val thickness = (weight / 25f) * scale * 0.15f
                     totalWidth += thickness
                 }
 
@@ -98,16 +97,16 @@ fun WeightPlateSelector(
                 var currentOffset = 0f
                 enabledPlatesList.forEach { weight ->
                     val plateColor = plateColors[weight] ?: Color.Gray
-                    val thickness = (weight.toFloat() / 25f) * scale * 0.15f * scaleFactor
+                    val thickness = (weight / 25f) * scale * 0.15f * scaleFactor
                     // Adjust plate heights based on weight - increased heights
                     val plateHeight = when (weight) {
-                        1.25 -> size.height * 0.5f
-                        2.5 -> size.height * 0.55f
-                        5.0 -> size.height * 0.6f
-                        10.0 -> size.height * 0.7f
-                        15.0 -> size.height * 0.75f
-                        20.0 -> size.height * 0.8f
-                        25.0 -> size.height * 0.85f
+                        1.25f -> size.height * 0.5f
+                        2.5f -> size.height * 0.55f
+                        5.0f -> size.height * 0.6f
+                        10.0f -> size.height * 0.7f
+                        15.0f -> size.height * 0.75f
+                        20.0f -> size.height * 0.8f
+                        25.0f -> size.height * 0.85f
                         else -> size.height * 0.6f
                     }
 
@@ -177,13 +176,13 @@ fun WeightPlateSelector(
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    WeightPlateButton(25.0, enabledPlates[25.0] ?: false, plateColors[25.0] ?: Color.Gray, onPlateToggle)
-                    WeightPlateButton(20.0, enabledPlates[20.0] ?: false, plateColors[20.0] ?: Color.Gray, onPlateToggle)
-                    WeightPlateButton(15.0, enabledPlates[15.0] ?: false, plateColors[15.0] ?: Color.Gray, onPlateToggle)
-                    WeightPlateButton(10.0, enabledPlates[10.0] ?: false, plateColors[10.0] ?: Color.Gray, onPlateToggle)
-                    WeightPlateButton(5.0, enabledPlates[5.0] ?: false, plateColors[5.0] ?: Color.Gray, onPlateToggle)
-                    WeightPlateButton(2.5, enabledPlates[2.5] ?: false, plateColors[2.5] ?: Color.Gray, onPlateToggle)
-                    WeightPlateButton(1.25, enabledPlates[1.25] ?: false, plateColors[1.25] ?: Color.Gray, onPlateToggle)
+                    WeightPlate(25.0f, enabledPlates[25.0f] ?: false, onPlateToggle)
+                    WeightPlate(20.0f, enabledPlates[20.0f] ?: false, onPlateToggle)
+                    WeightPlate(15.0f, enabledPlates[15.0f] ?: false, onPlateToggle)
+                    WeightPlate(10.0f, enabledPlates[10.0f] ?: false, onPlateToggle)
+                    WeightPlate(5.0f, enabledPlates[5.0f] ?: false, onPlateToggle)
+                    WeightPlate(2.5f, enabledPlates[2.5f] ?: false, onPlateToggle)
+                    WeightPlate(1.25f, enabledPlates[1.25f] ?: false, onPlateToggle)
                 }
             }
         }
@@ -191,20 +190,19 @@ fun WeightPlateSelector(
 }
 
 @Composable
-private fun WeightPlateButton(
-    weight: Double,
+private fun WeightPlate(
+    weight: Float,
     isEnabled: Boolean,
-    color: Color,
-    onToggle: (Double) -> Unit
+    onToggle: (Float) -> Unit
 ) {
     val iconRes = when (weight) {
-        1.25 -> R.drawable.weight_plate_1_25kg
-        2.5 -> R.drawable.weight_plate_2_5kg
-        5.0 -> R.drawable.weight_plate_5kg
-        10.0 -> R.drawable.weight_plate_10kg
-        15.0 -> R.drawable.weight_plate_15kg
-        20.0 -> R.drawable.weight_plate_20kg
-        25.0 -> R.drawable.weight_plate_25kg
+        1.25f -> R.drawable.weight_plate_1_25kg
+        2.5f -> R.drawable.weight_plate_2_5kg
+        5.0f -> R.drawable.weight_plate_5kg
+        10.0f -> R.drawable.weight_plate_10kg
+        15.0f -> R.drawable.weight_plate_15kg
+        20.0f -> R.drawable.weight_plate_20kg
+        25.0f -> R.drawable.weight_plate_25kg
         else -> R.drawable.weight_plate_1_25kg
     }
 

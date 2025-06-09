@@ -14,9 +14,9 @@ data class EquipmentEntity(
     val name: String,
     val type: String,
     val isPinLoaded: Boolean?,
-    val machineWeight: String?,
+    val machineWeight: Float?,
     val loadingPegs: Int?,
-    val barWeight: String?,
+    val barWeight: Float?,
     val ranges: String? // JSON string of List<WeightRange>
 )
 

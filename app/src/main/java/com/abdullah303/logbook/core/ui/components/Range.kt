@@ -17,15 +17,15 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Range(
-    ranges: List<Triple<String, String, String>>,
-    onRangesChange: (List<Triple<String, String, String>>) -> Unit,
+    ranges: List<Triple<Float, Float, Float>>,
+    onRangesChange: (List<Triple<Float, Float, Float>>) -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
     var weightUnitIndex by remember { mutableStateOf(1) } // Default to kg
     val weightUnits = listOf("lb", "kg")
     val weightUnit = weightUnits[weightUnitIndex]
-    var currentRanges by remember { mutableStateOf(if (ranges.isEmpty()) listOf(Triple("0", "100", "5")) else ranges) }
+    var currentRanges by remember { mutableStateOf(if (ranges.isEmpty()) listOf(Triple(0f, 100f, 5f)) else ranges) }
     val scope = rememberCoroutineScope()
 
     // Update currentRanges when ranges prop changes
@@ -39,9 +39,9 @@ fun Range(
     LaunchedEffect(navController) {
         navController.currentBackStackEntry
             ?.savedStateHandle
-            ?.getStateFlow("selectedWeight", "")
+            ?.getStateFlow<Float>("selectedWeight", 0f)
             ?.collect { weight ->
-                if (weight.isNotEmpty()) {
+                if (weight > 0f) {
                     val currentRangeIndex = navController.currentBackStackEntry?.savedStateHandle?.get<Int>("selectedRangeIndex") ?: -1
                     val selectedField = navController.currentBackStackEntry?.savedStateHandle?.get<String>("selectedField") ?: "min"
                     if (currentRangeIndex != -1) {
@@ -58,7 +58,7 @@ fun Range(
                             onRangesChange(updatedRanges)
                         }
                     }
-                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedWeight")
+                    navController.currentBackStackEntry?.savedStateHandle?.set("selectedWeight", 0f)
                     navController.currentBackStackEntry?.savedStateHandle?.set("selectedRangeIndex", -1)
                     navController.currentBackStackEntry?.savedStateHandle?.set("selectedField", "")
                 }
@@ -132,12 +132,17 @@ fun Range(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("selectedRangeIndex", index)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("selectedField", "min")
                                 navController.navigate(
-                                    Screen.MinWeightSelection.createRoute(max, interval, weightUnit, min)
+                                    Screen.MinWeightSelection.createRoute(
+                                        max = max.toString(),
+                                        step = interval.toString(),
+                                        unit = weightUnit,
+                                        currentValue = min.toString()
+                                    )
                                 )
                             }
                     ) {
                         OutlinedTextField(
-                            value = "$min $weightUnit",
+                            value = "%.1f %s".format(min, weightUnit),
                             onValueChange = { },
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
@@ -161,12 +166,17 @@ fun Range(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("selectedRangeIndex", index)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("selectedField", "max")
                                 navController.navigate(
-                                    Screen.MaxWeightSelection.createRoute(min, interval, weightUnit, max)
+                                    Screen.MaxWeightSelection.createRoute(
+                                        min = min.toString(),
+                                        step = interval.toString(),
+                                        unit = weightUnit,
+                                        currentValue = max.toString()
+                                    )
                                 )
                             }
                     ) {
                         OutlinedTextField(
-                            value = "$max $weightUnit",
+                            value = "%.1f %s".format(max, weightUnit),
                             onValueChange = { },
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
@@ -190,12 +200,15 @@ fun Range(
                                 navController.currentBackStackEntry?.savedStateHandle?.set("selectedRangeIndex", index)
                                 navController.currentBackStackEntry?.savedStateHandle?.set("selectedField", "step")
                                 navController.navigate(
-                                    Screen.StepWeightSelection.createRoute(weightUnit, interval)
+                                    Screen.StepWeightSelection.createRoute(
+                                        unit = weightUnit,
+                                        currentValue = interval.toString()
+                                    )
                                 )
                             }
                     ) {
                         OutlinedTextField(
-                            value = "$interval $weightUnit",
+                            value = "%.1f %s".format(interval, weightUnit),
                             onValueChange = { },
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
@@ -232,7 +245,7 @@ fun Range(
             Button(
                 onClick = {
                     val updatedRanges = currentRanges.toMutableList()
-                    updatedRanges.add(Triple("0", "100", "5"))
+                    updatedRanges.add(Triple(0f, 100f, 5f))
                     currentRanges = updatedRanges
                     onRangesChange(updatedRanges)
                 },

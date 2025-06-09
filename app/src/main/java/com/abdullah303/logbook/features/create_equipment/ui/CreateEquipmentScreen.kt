@@ -70,16 +70,16 @@ fun CreateEquipmentScreen(
     LaunchedEffect(navController) {
         navController.currentBackStackEntry
             ?.savedStateHandle
-            ?.getStateFlow("selectedWeight", "")
+            ?.getStateFlow<Float>("selectedWeight", 0f)
             ?.collect { weight ->
-                if (weight.isNotEmpty()) {
+                if (weight > 0f) {
                     val selectedField = navController.currentBackStackEntry?.savedStateHandle?.get<String>("selectedField")
                     if (selectedField == null) {  // Only handle direct weight selections (machine/bar weight)
                         when (equipmentType) {
                             "Resistance Machine" -> viewModel.updateMachineWeight(weight)
                             "Smith Machine" -> viewModel.updateBarWeight(weight)
                         }
-                        navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedWeight")
+                        navController.currentBackStackEntry?.savedStateHandle?.set("selectedWeight", 0f)
                     }
                 }
             }
@@ -172,8 +172,8 @@ fun CreateEquipmentScreen(
             when (equipmentType) {
                 "Cable Stack" -> {
                     Range(
-                        ranges = equipment.ranges?.map { Triple(it.weight, it.minReps, it.maxReps) } ?: emptyList(),
-                        onRangesChange = { viewModel.updateRanges(it.map { (weight, minReps, maxReps) -> WeightRange(weight, minReps, maxReps) }) },
+                        ranges = equipment.ranges?.map { Triple(it.step, it.minWeight, it.maxWeight) } ?: emptyList(),
+                        onRangesChange = { viewModel.updateRanges(it.map { (step, minWeight, maxWeight) -> WeightRange(step, minWeight, maxWeight) }) },
                         navController = navController,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -198,7 +198,7 @@ fun CreateEquipmentScreen(
                                 defaultSelectedItemIndex = if (equipment.isPinLoaded == true) 0 else 1,
                                 onItemSelection = { index ->
                                     // Clear any existing weight selection state
-                                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedWeight")
+                                    navController.currentBackStackEntry?.savedStateHandle?.set("selectedWeight", 0f)
                                     navController.currentBackStackEntry?.savedStateHandle?.remove<Int>("selectedRangeIndex")
                                     navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedField")
                                     viewModel.updateIsPinLoaded(index == 0)
@@ -209,8 +209,8 @@ fun CreateEquipmentScreen(
 
                     if (equipment.isPinLoaded == true) {
                         Range(
-                            ranges = equipment.ranges?.map { Triple(it.weight, it.minReps, it.maxReps) } ?: emptyList(),
-                            onRangesChange = { viewModel.updateRanges(it.map { (weight, minReps, maxReps) -> WeightRange(weight, minReps, maxReps) }) },
+                            ranges = equipment.ranges?.map { Triple(it.step, it.minWeight, it.maxWeight) } ?: emptyList(),
+                            onRangesChange = { viewModel.updateRanges(it.map { (step, minWeight, maxWeight) -> WeightRange(step, minWeight, maxWeight) }) },
                             navController = navController,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -236,6 +236,7 @@ fun CreateEquipmentScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
+                                                navController.currentBackStackEntry?.savedStateHandle?.set("selectedField", null)
                                                 navController.navigate(
                                                     Screen.WeightSelection.createRoute(
                                                         min = "0",
@@ -247,20 +248,17 @@ fun CreateEquipmentScreen(
                                             }
                                     ) {
                                         OutlinedTextField(
-                                            value = "${equipment.machineWeight ?: "0"} kg",
-                                            onValueChange = { },
+                                            value = "${equipment.machineWeight ?: 0f} kg",
+                                            onValueChange = {},
+                                            label = { Text("Machine Weight") },
                                             modifier = Modifier.fillMaxWidth(),
                                             readOnly = true,
                                             enabled = false,
-                                            singleLine = true,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                                disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                            colors = OutlinedTextFieldDefaults.colors(
                                                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                                disabledContainerColor = MaterialTheme.colorScheme.surface
-                                            ),
-                                            textStyle = MaterialTheme.typography.bodySmall
+                                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
                                         )
                                     }
                                 }
@@ -303,41 +301,33 @@ fun CreateEquipmentScreen(
                         )
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text("Bar Weight:", style = MaterialTheme.typography.titleMedium)
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate(
-                                            Screen.WeightSelection.createRoute(
-                                                min = "0",
-                                                max = "100",
-                                                interval = "1",
-                                                unit = "kg"
-                                            )
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable {
+                                    navController.currentBackStackEntry?.savedStateHandle?.set("selectedField", null)
+                                    navController.navigate(
+                                        Screen.WeightSelection.createRoute(
+                                            min = "0",
+                                            max = "100",
+                                            interval = "2.5",
+                                            unit = "kg"
                                         )
-                                    }
-                            ) {
-                                OutlinedTextField(
-                                    value = "${equipment.barWeight ?: "0"} kg",
-                                    onValueChange = { },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    readOnly = true,
-                                    enabled = false,
-                                    singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                        disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                        disabledContainerColor = MaterialTheme.colorScheme.surface
-                                    ),
-                                    textStyle = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                        ) {
+                            OutlinedTextField(
+                                value = "${equipment.barWeight ?: 0f} kg",
+                                onValueChange = {},
+                                label = { Text("Bar Weight") },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                enabled = false,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                            }
+                            )
                         }
                     }
                 }

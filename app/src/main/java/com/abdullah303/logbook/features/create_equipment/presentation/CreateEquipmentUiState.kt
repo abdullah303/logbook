@@ -8,9 +8,9 @@ data class CreateEquipmentUiState(
     val name: String = "",
     val type: EquipmentType = EquipmentType.BARBELL,
     val isPinLoaded: Boolean? = true,
-    val machineWeight: String = "",
+    val machineWeight: Float? = null,
     val loadingPegs: Int = 2,
-    val barWeight: String = "",
+    val barWeight: Float? = null,
     val ranges: List<WeightRange> = emptyList(),
     val isSaving: Boolean = false,
     val saveResult: SaveResult? = null
@@ -20,9 +20,9 @@ data class CreateEquipmentUiState(
             name = name,
             type = type,
             isPinLoaded = isPinLoaded,
-            machineWeight = machineWeight.takeIf { it.isNotBlank() },
+            machineWeight = machineWeight,
             loadingPegs = loadingPegs.takeIf { it > 0 },
-            barWeight = barWeight.takeIf { it.isNotBlank() },
+            barWeight = barWeight,
             ranges = ranges.takeIf { it.isNotEmpty() }
         )
     }
@@ -33,9 +33,9 @@ data class CreateEquipmentUiState(
                 name = equipment.name,
                 type = equipment.type,
                 isPinLoaded = equipment.isPinLoaded,
-                machineWeight = equipment.machineWeight ?: "",
+                machineWeight = equipment.machineWeight,
                 loadingPegs = equipment.loadingPegs ?: 2,
-                barWeight = equipment.barWeight ?: "",
+                barWeight = equipment.barWeight,
                 ranges = equipment.ranges ?: emptyList()
             )
         }

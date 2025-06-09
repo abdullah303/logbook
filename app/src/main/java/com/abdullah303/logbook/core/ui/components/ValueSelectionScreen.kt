@@ -33,10 +33,10 @@ import kotlin.math.abs
 fun ValueSelectionScreen(
     navController: NavController,
     title: String,
-    selectedValue: String = "",
+    selectedValue: Float?,
     unit: String = "",
-    valueOptions: List<String>,
-    onValueSelected: (String) -> Unit = {},
+    valueOptions: List<Float>,
+    onValueSelected: (Float) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var manualInput by remember { mutableStateOf("") }
@@ -46,11 +46,11 @@ fun ValueSelectionScreen(
 
     LaunchedEffect(selectedValue) {
         selectedValueState = selectedValue
-        if (selectedValue.isNotEmpty() && !valueOptions.contains(selectedValue)) {
-            manualInput = selectedValue
+        if (selectedValue != null && !valueOptions.contains(selectedValue)) {
+            manualInput = selectedValue.toString()
         }
         // Scroll to the selected value when the screen first appears
-        val index = valueOptions.indexOf(selectedValue)
+        val index = selectedValue?.let { valueOptions.indexOf(it) } ?: -1
         if (index != -1) {
             coroutineScope.launch {
                 listState.scrollToItem(index)
@@ -70,11 +70,15 @@ fun ValueSelectionScreen(
 
     // Scroll to highlighted value when it changes from manual input
     LaunchedEffect(manualInput) {
-        if (manualInput.isNotEmpty() && valueOptions.contains(manualInput)) {
-            val index = valueOptions.indexOf(manualInput)
-            if (index != -1) {
-                coroutineScope.launch {
-                    listState.scrollToItem(index)
+        if (manualInput.isNotEmpty()) {
+            manualInput.toFloatOrNull()?.let { manualValue ->
+                if (valueOptions.contains(manualValue)) {
+                    val index = valueOptions.indexOf(manualValue)
+                    if (index != -1) {
+                        coroutineScope.launch {
+                            listState.scrollToItem(index)
+                        }
+                    }
                 }
             }
         }
@@ -212,10 +216,11 @@ fun ValueSelectionScreen(
                 value = manualInput,
                 onValueChange = {
                     manualInput = it
-                    if (it.isNotEmpty() && valueOptions.contains(it)) {
-                        selectedValueState = it
+                    val floatValue = it.toFloatOrNull()
+                    if (floatValue != null && valueOptions.contains(floatValue)) {
+                        selectedValueState = floatValue
                     } else {
-                        selectedValueState = ""
+                        selectedValueState = null
                     }
                 },
                 label = { Text("Manual Input") },
@@ -223,7 +228,11 @@ fun ValueSelectionScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 trailingIcon = {
                     if (manualInput.isNotEmpty()) {
-                        IconButton(onClick = { onValueSelected(manualInput) }) {
+                        IconButton(onClick = {
+                            manualInput.toFloatOrNull()?.let {
+                                onValueSelected(it)
+                            }
+                        }) {
                             Icon(Icons.Default.Check, contentDescription = "Confirm")
                         }
                     }
