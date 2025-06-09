@@ -20,7 +20,7 @@ class CreateEquipmentViewModel @Inject constructor(
     private val repository: EquipmentRepository
 ) : ViewModel() {
 
-    private val _equipment = MutableStateFlow(Equipment(type = EquipmentType.BARBELL))
+    private val _equipment = MutableStateFlow(Equipment(type = EquipmentType.BARBELL, isPinLoaded = true))
     val equipment: StateFlow<Equipment> = _equipment.asStateFlow()
 
     private val _isSaving = MutableStateFlow(false)
@@ -54,8 +54,17 @@ class CreateEquipmentViewModel @Inject constructor(
     }
 
     fun updateIsPinLoaded(isPinLoaded: Boolean) {
-        _equipment.update { it.copy(isPinLoaded = isPinLoaded) }
-        updateEquipment(_equipment.value)
+        _equipment.update { currentEquipment ->
+            currentEquipment.copy(
+                isPinLoaded = isPinLoaded,
+                // Clear ranges when switching to plate loaded
+                ranges = if (!isPinLoaded) null else currentEquipment.ranges,
+                // Clear machine weight and loading pegs when switching to pin loaded
+                machineWeight = if (isPinLoaded) null else currentEquipment.machineWeight,
+                loadingPegs = if (isPinLoaded) null else currentEquipment.loadingPegs
+            )
+        }
+        // Don't call updateEquipment here to prevent navigation issues
     }
 
     fun updateMachineWeight(weight: String) {

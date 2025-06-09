@@ -25,12 +25,14 @@ fun Range(
     var weightUnitIndex by remember { mutableStateOf(1) } // Default to kg
     val weightUnits = listOf("lb", "kg")
     val weightUnit = weightUnits[weightUnitIndex]
-    var currentRanges by remember { mutableStateOf(ranges) }
+    var currentRanges by remember { mutableStateOf(if (ranges.isEmpty()) listOf(Triple("0", "100", "5")) else ranges) }
     val scope = rememberCoroutineScope()
 
     // Update currentRanges when ranges prop changes
     LaunchedEffect(ranges) {
-        currentRanges = ranges
+        if (ranges.isNotEmpty()) {
+            currentRanges = ranges
+        }
     }
 
     // Handle weight selection result using StateFlow
@@ -64,7 +66,13 @@ fun Range(
     }
 
     Card(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -79,19 +87,13 @@ fun Range(
                     text = "Ranges",
                     style = MaterialTheme.typography.titleMedium
                 )
-                SingleChoiceSegmentedButtonRow {
-                    weightUnits.forEachIndexed { index, label ->
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = weightUnits.size
-                            ),
-                            onClick = { weightUnitIndex = index },
-                            selected = index == weightUnitIndex,
-                            label = { Text(label) }
-                        )
-                    }
-                }
+                SegmentedControl(
+                    items = weightUnits,
+                    defaultSelectedItemIndex = weightUnitIndex,
+                    useFixedWidth = true,
+                    itemWidth = 60.dp,
+                    onItemSelection = { weightUnitIndex = it }
+                )
             }
 
             // Headings row
@@ -135,16 +137,20 @@ fun Range(
                             }
                     ) {
                         OutlinedTextField(
-                            value = min,
+                            value = "$min $weightUnit",
                             onValueChange = { },
-                            label = { Text("Min") },
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
                             enabled = false,
+                            singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                            )
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledContainerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            textStyle = MaterialTheme.typography.bodySmall
                         )
                     }
 
@@ -160,16 +166,20 @@ fun Range(
                             }
                     ) {
                         OutlinedTextField(
-                            value = max,
+                            value = "$max $weightUnit",
                             onValueChange = { },
-                            label = { Text("Max") },
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
                             enabled = false,
+                            singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                            )
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledContainerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            textStyle = MaterialTheme.typography.bodySmall
                         )
                     }
 
@@ -185,16 +195,20 @@ fun Range(
                             }
                     ) {
                         OutlinedTextField(
-                            value = interval,
+                            value = "$interval $weightUnit",
                             onValueChange = { },
-                            label = { Text("Step") },
                             modifier = Modifier.fillMaxWidth(),
                             readOnly = true,
                             enabled = false,
+                            singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                            )
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledContainerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            textStyle = MaterialTheme.typography.bodySmall
                         )
                     }
 

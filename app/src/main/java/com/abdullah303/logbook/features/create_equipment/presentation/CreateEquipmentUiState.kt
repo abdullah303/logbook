@@ -7,7 +7,7 @@ import com.abdullah303.logbook.core.domain.model.WeightRange
 data class CreateEquipmentUiState(
     val name: String = "",
     val type: EquipmentType = EquipmentType.BARBELL,
-    val isPinLoaded: Boolean? = null,
+    val isPinLoaded: Boolean? = true,
     val machineWeight: String = "",
     val loadingPegs: Int = 2,
     val barWeight: String = "",
