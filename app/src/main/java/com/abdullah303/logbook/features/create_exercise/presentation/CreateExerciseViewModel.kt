@@ -72,8 +72,14 @@ class CreateExerciseViewModel @Inject constructor(
         updateExercise(_exercise.value)
     }
 
-    fun updateEquipment(equipment: String) {
-        _exercise.update { it.copy(equipment = equipment) }
+    fun updateEquipment(name: String, id: String? = null) {
+        val isCustom = id != null
+        _exercise.update {
+            it.copy(
+                equipment = name,
+                equipmentId = if (isCustom) id ?: "" else ""
+            )
+        }
         updateExercise(_exercise.value)
     }
 
@@ -127,7 +133,7 @@ class CreateExerciseViewModel @Inject constructor(
 
     suspend fun findAndSetGenericEquipment(equipmentName: String) {
         val equipmentId = equipmentRepository.findOrCreateGenericEquipment(equipmentName)
-        updateEquipment(equipmentId)
+        updateEquipment(equipmentName, equipmentId)
     }
 }
 

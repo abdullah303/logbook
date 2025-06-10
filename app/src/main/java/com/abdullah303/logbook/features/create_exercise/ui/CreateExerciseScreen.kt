@@ -37,6 +37,25 @@ fun CreateExerciseScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val selectedEquipmentId by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("selectedEquipmentId", "")
+        ?.collectAsStateWithLifecycle() ?: mutableStateOf("")
+
+    val selectedEquipmentName by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("selectedEquipmentName", "")
+        ?.collectAsStateWithLifecycle() ?: mutableStateOf("")
+
+    LaunchedEffect(selectedEquipmentId, selectedEquipmentName) {
+        if (selectedEquipmentId.isNotEmpty() && selectedEquipmentName.isNotEmpty()) {
+            viewModel.updateEquipment(selectedEquipmentName, selectedEquipmentId)
+            // Reset the values in the current screen's SavedStateHandle to avoid re-triggering
+            navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipmentId", "")
+            navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipmentName", "")
+        }
+    }
+
     // Handle save result
     LaunchedEffect(saveResult) {
         when (saveResult) {
@@ -50,26 +69,6 @@ fun CreateExerciseScreen(
             null -> { /* Do nothing */ }
         }
         viewModel.clearSaveResult()
-    }
-
-    // Handle equipment selection
-    LaunchedEffect(navController.previousBackStackEntry?.savedStateHandle) {
-        navController.previousBackStackEntry?.savedStateHandle?.get<String>("selectedEquipment")?.let { equipment ->
-            if (equipment.isNotEmpty()) {
-                viewModel.updateEquipment(equipment)
-                navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", "")
-            }
-        }
-    }
-
-    // Also observe the current back stack entry for equipment selection
-    LaunchedEffect(navController.currentBackStackEntry?.savedStateHandle) {
-        navController.currentBackStackEntry?.savedStateHandle?.getStateFlow("selectedEquipment", "")?.collect { equipment ->
-            if (equipment.isNotEmpty()) {
-                viewModel.updateEquipment(equipment)
-                navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipment", "")
-            }
-        }
     }
 
     // Handle primary muscle selection
@@ -111,6 +110,8 @@ fun CreateExerciseScreen(
             }
     }
     
+    val scaffoldState = rememberScrollState()
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -150,7 +151,7 @@ fun CreateExerciseScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scaffoldState),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))

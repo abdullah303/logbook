@@ -7,43 +7,43 @@ import kotlinx.coroutines.flow.Flow
 interface ExerciseDao {
     
     @Query(
-        "SELECT exercises.*, equipment.name AS equipmentName " +
+        "SELECT exercises.*, equipment.name AS customEquipmentName " +
                 "FROM exercises " +
-                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "LEFT JOIN equipment ON exercises.equipmentId = equipment.id " +
                 "ORDER BY exercises.name ASC"
     )
     fun getAllExercises(): Flow<List<ExerciseWithEquipment>>
     
     @Query(
-        "SELECT exercises.*, equipment.name AS equipmentName " +
+        "SELECT exercises.*, equipment.name AS customEquipmentName " +
                 "FROM exercises " +
-                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "LEFT JOIN equipment ON exercises.equipmentId = equipment.id " +
                 "WHERE exercises.id = :id"
     )
     suspend fun getExerciseById(id: String): ExerciseWithEquipment?
     
     @Query(
-        "SELECT exercises.*, equipment.name AS equipmentName " +
+        "SELECT exercises.*, equipment.name AS customEquipmentName " +
                 "FROM exercises " +
-                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "LEFT JOIN equipment ON exercises.equipmentId = equipment.id " +
                 "WHERE exercises.name LIKE '%' || :searchQuery || '%' " +
                 "ORDER BY exercises.name ASC"
     )
     fun searchExercises(searchQuery: String): Flow<List<ExerciseWithEquipment>>
     
     @Query(
-        "SELECT exercises.*, equipment.name AS equipmentName " +
+        "SELECT exercises.*, equipment.name AS customEquipmentName " +
                 "FROM exercises " +
-                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "LEFT JOIN equipment ON exercises.equipmentId = equipment.id " +
                 "WHERE exercises.primaryMuscle = :muscle " +
                 "ORDER BY exercises.name ASC"
     )
     fun getExercisesByPrimaryMuscle(muscle: String): Flow<List<ExerciseWithEquipment>>
     
     @Query(
-        "SELECT exercises.*, equipment.name AS equipmentName " +
+        "SELECT exercises.*, equipment.name AS customEquipmentName " +
                 "FROM exercises " +
-                "INNER JOIN equipment ON exercises.equipmentId = equipment.id " +
+                "LEFT JOIN equipment ON exercises.equipmentId = equipment.id " +
                 "WHERE exercises.equipmentId = :equipmentId " +
                 "ORDER BY exercises.name ASC"
     )

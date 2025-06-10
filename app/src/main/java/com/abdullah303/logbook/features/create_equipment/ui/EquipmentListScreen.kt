@@ -78,7 +78,8 @@ fun EquipmentListScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment.id)
+                    navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipmentId", equipment.id)
+                    navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipmentName", equipment.name)
                     navController.navigateUp()
                 }
             ) {
