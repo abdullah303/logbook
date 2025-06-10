@@ -44,6 +44,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -66,7 +69,10 @@ fun SplitCreationToolbar(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable { showExtras = false }
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { showExtras = false }
             )
         }
 
@@ -81,13 +87,17 @@ fun SplitCreationToolbar(
                 modifier = Modifier
                     .shadow(
                         elevation = 8.dp,
-                        shape = RoundedCornerShape(24.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        spotColor = Color.Transparent
                     ),
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(24.dp)
+                color = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(0.dp, Color.Transparent)
             ) {
                 HorizontalFloatingToolbar(
-                    modifier = Modifier.animateContentSize(),
+                    modifier = Modifier
+                        .animateContentSize()
+                        .background(MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(24.dp)),
                     expanded = expanded,
                     leadingContent = {
                         Row(
