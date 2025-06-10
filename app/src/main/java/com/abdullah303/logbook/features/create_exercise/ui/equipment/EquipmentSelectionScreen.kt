@@ -14,23 +14,30 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.abdullah303.logbook.navigation.Screen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.abdullah303.logbook.features.create_exercise.presentation.CreateExerciseViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EquipmentSelectionScreen(
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: CreateExerciseViewModel = hiltViewModel()
 ) {
-    val equipmentOptions = listOf(
-        "Cable Stack",
-        "Dumbbells",
-        "Resistance Machine",
-        "Smith Machine",
-        "Barbell",
-        "Bodyweight",
-        "Resistance Band",
-        "Plate"
-    )
+    val equipmentOptions = remember {
+        listOf(
+            "Cable Stack",
+            "Dumbbells",
+            "Resistance Machine",
+            "Smith Machine",
+            "Barbell",
+            "Bodyweight",
+            "Resistance Band",
+            "Plate"
+        )
+    }
+    val scope = rememberCoroutineScope()
 
     val selectedEquipmentFromList by navController.currentBackStackEntry
         ?.savedStateHandle
@@ -90,8 +97,10 @@ fun EquipmentSelectionScreen(
                                 Screen.EquipmentList.createRoute(equipment)
                             )
                         } else {
-                            navController.previousBackStackEntry?.savedStateHandle?.set("selectedEquipment", equipment)
-                            navController.navigateUp()
+                            scope.launch {
+                                viewModel.findAndSetGenericEquipment(equipment)
+                                navController.navigateUp()
+                            }
                         }
                     }
                 ) {

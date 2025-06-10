@@ -5,6 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EquipmentDao {
+    @Query("SELECT * FROM equipment WHERE name = :name LIMIT 1")
+    suspend fun getEquipmentByName(name: String): EquipmentEntity?
+    
     @Query("SELECT * FROM equipment ORDER BY name ASC")
     fun getAllEquipment(): Flow<List<EquipmentEntity>>
     

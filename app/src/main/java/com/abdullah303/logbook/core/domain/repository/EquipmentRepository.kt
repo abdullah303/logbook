@@ -17,4 +17,6 @@ interface EquipmentRepository {
     suspend fun deleteEquipmentById(id: String)
     fun searchEquipment(searchQuery: String): Flow<List<Equipment>>
     fun getEquipmentByType(type: String): Flow<List<Equipment>>
+    suspend fun findOrCreateGenericEquipment(equipmentName: String): String
+    suspend fun getEquipmentCount(): Int
 } 

@@ -124,6 +124,11 @@ class CreateExerciseViewModel @Inject constructor(
             exerciseRepository.clearExercise()
         }
     }
+
+    suspend fun findAndSetGenericEquipment(equipmentName: String) {
+        val equipmentId = equipmentRepository.findOrCreateGenericEquipment(equipmentName)
+        updateEquipment(equipmentId)
+    }
 }
 
 sealed class SaveResult {

@@ -25,60 +25,18 @@ import com.abdullah303.logbook.features.splits.data.Split
  */
 object MuscleImageGenerator {
 
-    private val availableMuscleGroups = setOf(
-        "chest", "back", "biceps", "triceps", "quadriceps", "hamstrings", 
-        "calves", "shoulders", "glutes", "forearms", "abs", "traps", "neck", "front delts", "side delts", "rear delts"
-    )
-
-    /**
-     * Maps muscle names to resource identifiers.
-     */
-    private val muscleResourceMap = mapOf(
-        "chest" to "muscles_chest",
-        "back" to "muscles_back",
-        "biceps" to "muscles_biceps",
-        "triceps" to "muscles_triceps",
-        "quadriceps" to "muscles_quadriceps",
-        "hamstrings" to "muscles_hamstring",
-        "calves" to "muscles_calves",
-        "shoulders" to "muscles_shoulders",
-        "glutes" to "muscles_gluteus",
-        "forearms" to "muscles_forearms",
-        "abs" to "muscles_abs",
-        "traps" to "muscles_back_upper",
-        "neck" to "muscles_neck",
-        "front delts" to "muscles_shoulders_front",
-        "side delts" to "muscles_shoulders_front",
-        "rear delts" to "muscles_shoulders_back"
-        )
-
     /**
      * Maps exercise template muscle names to our standardized muscle names.
      */
-    private fun normalizeMuscle(muscleName: String): String? {
-        return when (muscleName.lowercase().trim()) {
-            "chest", "upper chest" -> "chest"
-            "triceps" -> "triceps"
-            "shoulders", "front deltoids", "lateral deltoids", "rear deltoids" -> "shoulders"
-            "back" -> "back"
-            "biceps" -> "biceps"
-            "quadriceps" -> "quadriceps"
-            "hamstrings" -> "hamstrings"
-            "glutes" -> "glutes"
-            "calves" -> "calves"
-            "forearms" -> "forearms"
-            "lower back" -> "back"
-            "traps", "rhomboids" -> "traps"
-            "abs", "core" -> "abs"
-            else -> null // Return null for unrecognized muscle names
-        }
+    private fun normalizeMuscle(muscleName: String): Muscle? {
+        return Muscle.fromString(muscleName)
     }
 
     /**
      * Computes muscle usage frequency across all workouts in the split.
      */
-    fun computeMuscleUsage(split: Split): Map<String, Int> {
-        val counts = mutableMapOf<String, Int>().withDefault { 0 }
+    fun computeMuscleUsage(split: Split): Map<Muscle, Int> {
+        val counts = mutableMapOf<Muscle, Int>().withDefault { 0 }
 
         split.workouts.forEach { workout ->
             workout.exercises.forEach { instance ->
@@ -90,7 +48,7 @@ object MuscleImageGenerator {
                     normalizeMuscle(it.primaryMuscle)?.let { normalizedMuscle ->
                         counts[normalizedMuscle] = counts.getValue(normalizedMuscle) + instance.sets
                     }
-                    
+
                     // Normalize secondary muscles
                     it.secondaryMuscles.forEach { secondary ->
                         normalizeMuscle(secondary)?.let { normalizedMuscle ->
@@ -107,8 +65,8 @@ object MuscleImageGenerator {
     /**
      * Computes muscle usage frequency for a single workout.
      */
-    fun computeWorkoutMuscleUsage(workout: com.abdullah303.logbook.features.splits.data.Workout): Map<String, Int> {
-        val counts = mutableMapOf<String, Int>().withDefault { 0 }
+    fun computeWorkoutMuscleUsage(workout: com.abdullah303.logbook.features.splits.data.Workout): Map<Muscle, Int> {
+        val counts = mutableMapOf<Muscle, Int>().withDefault { 0 }
 
         workout.exercises.forEach { instance ->
             val template = DummyData.exerciseTemplates
@@ -119,7 +77,7 @@ object MuscleImageGenerator {
                 normalizeMuscle(it.primaryMuscle)?.let { normalizedMuscle ->
                     counts[normalizedMuscle] = counts.getValue(normalizedMuscle) + instance.sets
                 }
-                
+
                 // Normalize secondary muscles
                 it.secondaryMuscles.forEach { secondary ->
                     normalizeMuscle(secondary)?.let { normalizedMuscle ->
@@ -187,11 +145,9 @@ object MuscleImageGenerator {
         val canvas = Canvas(result)
 
         // Overlay each muscle group with usage-based color
-        muscleUsage.forEach { (muscleName, count) ->
-            if (count > 0 && availableMuscleGroups.contains(muscleName)) {
-                val overlayName = muscleResourceMap[muscleName]
-                    ?: throw IllegalArgumentException("No resource mapping for muscle '$muscleName'.")
-                
+        muscleUsage.forEach { (muscle, count) ->
+            if (count > 0) {
+                val overlayName = muscle.resourceName
                 val overlayBitmap = loadBitmapByName(context, overlayName)
                     ?: throw IllegalArgumentException("Overlay image '$overlayName' not found.")
 
@@ -234,11 +190,9 @@ object MuscleImageGenerator {
         val canvas = Canvas(result)
 
         // Overlay each muscle group with usage-based color
-        muscleUsage.forEach { (muscleName, count) ->
-            if (count > 0 && availableMuscleGroups.contains(muscleName)) {
-                val overlayName = muscleResourceMap[muscleName]
-                    ?: throw IllegalArgumentException("No resource mapping for muscle '$muscleName'.")
-                
+        muscleUsage.forEach { (muscle, count) ->
+            if (count > 0) {
+                val overlayName = muscle.resourceName
                 val overlayBitmap = loadBitmapByName(context, overlayName)
                     ?: throw IllegalArgumentException("Overlay image '$overlayName' not found.")
 
@@ -283,11 +237,9 @@ object MuscleImageGenerator {
         val canvas = Canvas(result)
 
         // Overlay each muscle group with usage-based color
-        muscleUsage.forEach { (muscleName, count) ->
-            if (count > 0 && availableMuscleGroups.contains(muscleName)) {
-                val overlayName = muscleResourceMap[muscleName]
-                    ?: throw IllegalArgumentException("No resource mapping for muscle '$muscleName'.")
-                
+        muscleUsage.forEach { (muscle, count) ->
+            if (count > 0) {
+                val overlayName = muscle.resourceName
                 val overlayBitmap = loadBitmapByName(context, overlayName)
                     ?: throw IllegalArgumentException("Overlay image '$overlayName' not found.")
 
@@ -317,7 +269,7 @@ object MuscleImageGenerator {
      */
     fun getMuscleImage(
         context: Context,
-        muscleGroups: List<String>,
+        muscleGroups: List<Muscle>,
         colorStr: String,
         transparentBg: Boolean = false
     ): Bitmap {
@@ -335,16 +287,8 @@ object MuscleImageGenerator {
         val canvas = Canvas(result)
 
         // Overlay each muscle group
-        muscleGroups.map { it.trim().lowercase() }.forEach { group ->
-            if (!availableMuscleGroups.contains(group)) {
-                throw IllegalArgumentException(
-                    "Unknown muscle group '$group'. Available: ${availableMuscleGroups.joinToString()}."
-                )
-            }
-            
-            val overlayName = muscleResourceMap[group]
-                ?: throw IllegalArgumentException("No resource mapping for muscle '$group'.")
-            
+        muscleGroups.forEach { muscle ->
+            val overlayName = muscle.resourceName
             val overlayBitmap = loadBitmapByName(context, overlayName)
                 ?: throw IllegalArgumentException("Overlay image '$overlayName' not found.")
 
@@ -390,7 +334,7 @@ fun MuscleHeatmapImage(
         try {
             val muscleUsage = MuscleImageGenerator.computeMuscleUsage(split)
             println("DEBUG: Muscle usage computed: $muscleUsage")
-            
+
             val result = MuscleImageGenerator.getMuscleHeatmapImage(
                 context = context,
                 split = split,
@@ -433,22 +377,22 @@ fun WorkoutMuscleHeatmapImage(
         try {
             println("DEBUG: Computing muscle usage for workout: ${workout.name}")
             println("DEBUG: Workout has ${workout.exercises.size} exercises")
-            
+
             workout.exercises.forEach { exercise ->
                 val template = DummyData.exerciseTemplates.firstOrNull { it.id == exercise.exerciseTemplateId }
                 template?.let {
                     println("DEBUG: Exercise: ${it.name}, Primary: ${it.primaryMuscle}, Secondary: ${it.secondaryMuscles}, Sets: ${exercise.sets}")
                 }
             }
-            
+
             val muscleUsage = MuscleImageGenerator.computeWorkoutMuscleUsage(workout)
             println("DEBUG: Workout muscle usage computed: $muscleUsage")
-            
+
             if (muscleUsage.isEmpty()) {
                 println("WARNING: No muscle usage found - check muscle name mapping")
                 return@remember null
             }
-            
+
             val result = MuscleImageGenerator.getWorkoutMuscleHeatmapImageWithColor(
                 context = context,
                 workout = workout,

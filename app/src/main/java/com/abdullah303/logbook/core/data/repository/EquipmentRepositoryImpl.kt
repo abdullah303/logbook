@@ -65,4 +65,32 @@ class EquipmentRepositoryImpl @Inject constructor(
             entities.map { it.toDomainModel() }
         }
     }
+    
+    override suspend fun findOrCreateGenericEquipment(equipmentName: String): String {
+        val existingEquipment = equipmentDao.getEquipmentByName(equipmentName)
+        if (existingEquipment != null) {
+            return existingEquipment.id
+        }
+
+        val equipmentType = when (equipmentName.uppercase()) {
+            "BARBELL" -> EquipmentType.BARBELL
+            "DUMBBELL" -> EquipmentType.DUMBBELL
+            "CABLE STACK" -> EquipmentType.CABLE_STACK
+            "RESISTANCE MACHINE" -> EquipmentType.RESISTANCE_MACHINE
+            "SMITH MACHINE" -> EquipmentType.SMITH_MACHINE
+            "BODYWEIGHT" -> EquipmentType.BODYWEIGHT
+            else -> EquipmentType.BODYWEIGHT // A sensible default
+        }
+
+        val newEquipment = Equipment(
+            name = equipmentName,
+            type = equipmentType
+        )
+        equipmentDao.insertEquipment(newEquipment.toEntity())
+        return newEquipment.id
+    }
+    
+    override suspend fun getEquipmentCount(): Int {
+        return equipmentDao.getEquipmentCount()
+    }
 } 
