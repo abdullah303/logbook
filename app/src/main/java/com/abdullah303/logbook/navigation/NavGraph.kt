@@ -59,14 +59,14 @@ fun NavGraph(navController: NavHostController) {
             )
         }
         
-        composable(Screen.AuxillaryMuscleSelection.route) {
+        composable(Screen.AuxiliaryMuscleSelection.route) {
             MuscleSelectionScreen(
                 navController = navController,
                 isMultiSelect = true,
                 onMuscleSelected = { selectedMuscles ->
                     navController.previousBackStackEntry
                         ?.savedStateHandle
-                        ?.set("selectedAuxillaryMuscles", selectedMuscles.joinToString(", "))
+                        ?.set("selectedAuxiliaryMuscles", selectedMuscles.joinToString(", "))
                 }
             )
         }

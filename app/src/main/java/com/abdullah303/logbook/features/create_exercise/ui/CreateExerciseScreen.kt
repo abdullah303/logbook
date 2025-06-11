@@ -88,11 +88,11 @@ fun CreateExerciseScreen(
     LaunchedEffect(navController) {
         navController.currentBackStackEntry
             ?.savedStateHandle
-            ?.getStateFlow("selectedAuxillaryMuscles", "")
+            ?.getStateFlow("selectedAuxiliaryMuscles", "")
             ?.collect { selectedMuscles ->
                 if (selectedMuscles.isNotEmpty()) {
                     viewModel.updateAuxiliaryMuscles(selectedMuscles)
-                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedAuxillaryMuscles")
+                    navController.currentBackStackEntry?.savedStateHandle?.remove<String>("selectedAuxiliaryMuscles")
                 }
             }
     }
@@ -285,7 +285,7 @@ fun CreateExerciseScreen(
                     LaunchedEffect(auxiliaryMusclesInteractionSource) {
                         auxiliaryMusclesInteractionSource.interactions.collect { interaction ->
                             if (interaction is PressInteraction.Release) {
-                                    navController.navigate(Screen.AuxillaryMuscleSelection.route)
+                                    navController.navigate(Screen.AuxiliaryMuscleSelection.route)
                             }
                         }
                     }
