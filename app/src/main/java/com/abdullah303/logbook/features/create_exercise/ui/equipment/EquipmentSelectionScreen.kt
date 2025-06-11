@@ -39,21 +39,29 @@ fun EquipmentSelectionScreen(
     }
     val scope = rememberCoroutineScope()
 
-    val selectedEquipmentFromList by navController.currentBackStackEntry
+    val selectedEquipmentId by navController.currentBackStackEntry
         ?.savedStateHandle
-        ?.getStateFlow("selectedEquipment", "")
+        ?.getStateFlow("selectedEquipmentId", "")
         ?.collectAsStateWithLifecycle() ?: mutableStateOf("")
 
-    LaunchedEffect(selectedEquipmentFromList) {
-        if (selectedEquipmentFromList.isNotEmpty()) {
+    val selectedEquipmentName by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("selectedEquipmentName", "")
+        ?.collectAsStateWithLifecycle() ?: mutableStateOf("")
+
+    LaunchedEffect(selectedEquipmentId, selectedEquipmentName) {
+        if (selectedEquipmentId.isNotEmpty() && selectedEquipmentName.isNotEmpty()) {
             // Pass the result to the previous screen (CreateExerciseScreen)
             navController.previousBackStackEntry
                 ?.savedStateHandle
-                ?.set("selectedEquipment", selectedEquipmentFromList)
-            // Reset the value in the current screen's SavedStateHandle to avoid re-triggering
-            navController.currentBackStackEntry
+                ?.set("selectedEquipmentId", selectedEquipmentId)
+            navController.previousBackStackEntry
                 ?.savedStateHandle
-                ?.set("selectedEquipment", "")
+                ?.set("selectedEquipmentName", selectedEquipmentName)
+
+            // Reset the values in the current screen's SavedStateHandle to avoid re-triggering
+            navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipmentId", "")
+            navController.currentBackStackEntry?.savedStateHandle?.set("selectedEquipmentName", "")
             // Navigate back to CreateExerciseScreen
             navController.popBackStack()
         }
