@@ -68,6 +68,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.graphics.shapes)
     
+    // room database dependencies
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    
     // hilt dependencies
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
