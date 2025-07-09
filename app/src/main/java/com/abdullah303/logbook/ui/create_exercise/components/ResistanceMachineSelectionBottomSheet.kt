@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.abdullah303.logbook.data.local.entity.Equipment
 import com.abdullah303.logbook.data.model.ResistanceMachineType
 import com.abdullah303.logbook.ui.components.GenericBottomSheet
+import com.abdullah303.logbook.ui.create_equipment.create_resistance_machine.CreateResistanceMachineBottomSheet
 
 // data class to combine equipment and resistance machine info
 data class ResistanceMachineConfiguration(
@@ -52,11 +54,13 @@ fun ResistanceMachineSelectionBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
     onSelectResistanceMachine: (ResistanceMachineConfiguration) -> Unit = {},
-    onNavigateToCreateResistanceMachine: () -> Unit = {},
+    onResistanceMachineCreated: () -> Unit = {},
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var showCreateResistanceMachine by remember { mutableStateOf(false) }
+    val createResistanceMachineSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     
     // filter configurations based on search query
     val filteredConfigurations = resistanceMachineConfigurations.filter {
@@ -103,7 +107,7 @@ fun ResistanceMachineSelectionBottomSheet(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 IconButton(
-                    onClick = onNavigateToCreateResistanceMachine,
+                    onClick = { showCreateResistanceMachine = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -148,6 +152,18 @@ fun ResistanceMachineSelectionBottomSheet(
                 }
             }
         }
+    }
+
+    // create resistance machine bottom sheet
+    if (showCreateResistanceMachine) {
+        CreateResistanceMachineBottomSheet(
+            onDismiss = { showCreateResistanceMachine = false },
+            onResistanceMachineCreated = {
+                onResistanceMachineCreated()
+                showCreateResistanceMachine = false
+            },
+            sheetState = createResistanceMachineSheetState
+        )
     }
 }
 

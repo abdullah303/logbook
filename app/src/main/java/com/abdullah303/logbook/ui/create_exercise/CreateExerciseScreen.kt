@@ -466,8 +466,9 @@ fun CreateExerciseScreen(
                         resistanceMachineSheetState.hide()
                     }
                 },
-                onNavigateToCreateResistanceMachine = {
-                    navigationState.onNavigateToCreateResistanceMachine()
+                onResistanceMachineCreated = {
+                    // refresh resistance machine configurations after creation
+                    // this would typically trigger a reload of the data
                     showResistanceMachineSelection = false
                     scope.launch {
                         resistanceMachineSheetState.hide()
