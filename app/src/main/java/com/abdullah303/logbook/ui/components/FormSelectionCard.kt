@@ -77,7 +77,7 @@ fun FormSelectionCard(
                 ) {
                     Text(
                         text = value,
-                        style = MaterialTheme.typography.bodyLarge.copy(
+                        style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
                         color = MaterialTheme.colorScheme.onSurface

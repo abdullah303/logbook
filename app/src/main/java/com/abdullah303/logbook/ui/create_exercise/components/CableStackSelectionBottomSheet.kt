@@ -25,10 +25,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import com.abdullah303.logbook.data.local.entity.CableStackInfo
 import com.abdullah303.logbook.data.local.entity.Equipment
 import com.abdullah303.logbook.ui.components.GenericBottomSheet
+import com.abdullah303.logbook.ui.create_equipment.create_cable_stack.CreateCableStackBottomSheet
+import kotlinx.coroutines.launch
 
 // data class to combine equipment and cable stack info
 data class CableStackConfiguration(
@@ -52,11 +57,14 @@ fun CableStackSelectionBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
     onSelectCableStack: (CableStackConfiguration) -> Unit = {},
-    onNavigateToCreateCableStack: () -> Unit = {},
+    onCableStackCreated: () -> Unit = {},
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var showCreateCableStack by remember { mutableStateOf(false) }
+    val createCableStackSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
     
     // filter configurations based on search query
     val filteredConfigurations = cableStackConfigurations.filter {
@@ -103,7 +111,7 @@ fun CableStackSelectionBottomSheet(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 IconButton(
-                    onClick = onNavigateToCreateCableStack,
+                    onClick = { showCreateCableStack = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -148,6 +156,32 @@ fun CableStackSelectionBottomSheet(
                 }
             }
         }
+    }
+    
+    // show create cable stack bottom sheet when needed
+    if (showCreateCableStack) {
+        LaunchedEffect(showCreateCableStack) {
+            if (showCreateCableStack) {
+                createCableStackSheetState.show()
+            }
+        }
+        CreateCableStackBottomSheet(
+            onDismiss = {
+                showCreateCableStack = false
+                scope.launch {
+                    createCableStackSheetState.hide()
+                }
+            },
+            onCableStackCreated = {
+                onCableStackCreated()
+                showCreateCableStack = false
+                scope.launch {
+                    createCableStackSheetState.hide()
+                }
+            },
+            sheetState = createCableStackSheetState,
+            maxHeightFraction = maxHeightFraction
+        )
     }
 }
 

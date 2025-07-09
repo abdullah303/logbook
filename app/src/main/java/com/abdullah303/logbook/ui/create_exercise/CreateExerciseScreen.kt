@@ -432,8 +432,9 @@ fun CreateExerciseScreen(
                         cableStackSheetState.hide()
                     }
                 },
-                onNavigateToCreateCableStack = {
-                    navigationState.onNavigateToCreateCableStack()
+                onCableStackCreated = {
+                    // refresh cable stack configurations after creation
+                    // this would typically trigger a reload of the data
                     showCableStackSelection = false
                     scope.launch {
                         cableStackSheetState.hide()
