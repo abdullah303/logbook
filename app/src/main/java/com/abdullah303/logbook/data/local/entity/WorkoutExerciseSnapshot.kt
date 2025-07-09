@@ -37,5 +37,5 @@ data class WorkoutExerciseSnapshot(
     val reps_max: Int,
     val rir: Int,
     val dropset: Boolean,
-    val setup_info: String?
+    val setup_info: List<String>?
 ) 

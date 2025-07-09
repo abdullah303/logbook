@@ -4,8 +4,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -72,7 +75,17 @@ fun CreateExerciseScreen(
     val selectedCableStack by viewModel.selectedCableStack.collectAsState()
     val resistanceMachineConfigurations by viewModel.resistanceMachineConfigurations.collectAsState()
     val selectedResistanceMachine by viewModel.selectedResistanceMachine.collectAsState()
+    val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val isSaving by viewModel.isSaving.collectAsState()
     
+    // handle save success
+    LaunchedEffect(saveSuccess) {
+        if (saveSuccess) {
+            onNavigateBack()
+            viewModel.resetSaveSuccess()
+        }
+    }
+
     // bottom sheet state
     var showEquipmentSelection by remember { mutableStateOf(false) }
     var showPrimaryMuscleSelection by remember { mutableStateOf(false) }
@@ -192,8 +205,35 @@ fun CreateExerciseScreen(
                 SetupInfoCard(
                     value = setupInfo,
                     onValueChange = { viewModel.updateSetupInfo(it) },
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    onAddLine = { viewModel.addSetupInfoLine() },
+                    onUpdateLine = { index, value -> viewModel.updateSetupInfoLine(index, value) },
+                    onRemoveLine = { index -> viewModel.removeSetupInfoLine(index) },
+                    modifier = Modifier.padding(bottom = 24.dp)
                 )
+                
+                // confirm button
+                Button(
+                    onClick = { viewModel.saveExercise() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    enabled = !isSaving && exerciseName.isNotBlank() && (
+                        selectedBarbell != null || 
+                        selectedSmithMachine != null || 
+                        selectedCableStack != null || 
+                        selectedResistanceMachine != null
+                    )
+                ) {
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    Text(
+                        text = if (isSaving) "Saving..." else "Create Exercise",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
         

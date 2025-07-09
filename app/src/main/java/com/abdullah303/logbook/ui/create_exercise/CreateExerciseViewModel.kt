@@ -8,10 +8,12 @@ import com.abdullah303.logbook.data.model.ResistanceMachineType
 import com.abdullah303.logbook.data.repository.BarbellInfoRepository
 import com.abdullah303.logbook.data.repository.CableStackInfoRepository
 import com.abdullah303.logbook.data.repository.EquipmentRepository
+import com.abdullah303.logbook.data.repository.ExerciseRepository
 import com.abdullah303.logbook.data.repository.PinLoadedInfoRepository
 import com.abdullah303.logbook.data.repository.PlateLoadedInfoRepository
 import com.abdullah303.logbook.data.repository.ResistanceMachineInfoRepository
 import com.abdullah303.logbook.data.repository.SmithMachineInfoRepository
+import com.abdullah303.logbook.data.local.entity.Exercise
 import com.abdullah303.logbook.ui.create_exercise.components.BarbellConfiguration
 import com.abdullah303.logbook.ui.create_exercise.components.CableStackConfiguration
 import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineConfiguration
@@ -26,6 +28,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import java.util.UUID
 import javax.inject.Inject
 
 
@@ -35,6 +39,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CreateExerciseViewModel @Inject constructor(
     private val equipmentRepository: EquipmentRepository,
+    private val exerciseRepository: ExerciseRepository,
     private val barbellInfoRepository: BarbellInfoRepository,
     private val smithMachineInfoRepository: SmithMachineInfoRepository,
     private val cableStackInfoRepository: CableStackInfoRepository,
@@ -58,8 +63,8 @@ class CreateExerciseViewModel @Inject constructor(
     private val _bodyweightContribution = MutableStateFlow(0f)
     val bodyweightContribution: StateFlow<Float> = _bodyweightContribution.asStateFlow()
 
-    private val _setupInfo = MutableStateFlow("")
-    val setupInfo: StateFlow<String> = _setupInfo.asStateFlow()
+    private val _setupInfo = MutableStateFlow<List<String>>(emptyList())
+    val setupInfo: StateFlow<List<String>> = _setupInfo.asStateFlow()
 
     private val _smithMachineConfigurations = MutableStateFlow<List<SmithMachineConfiguration>>(emptyList())
     val smithMachineConfigurations: StateFlow<List<SmithMachineConfiguration>> = _smithMachineConfigurations.asStateFlow()
@@ -84,6 +89,14 @@ class CreateExerciseViewModel @Inject constructor(
 
     private val _selectedResistanceMachine = MutableStateFlow<ResistanceMachineConfiguration?>(null)
     val selectedResistanceMachine: StateFlow<ResistanceMachineConfiguration?> = _selectedResistanceMachine.asStateFlow()
+    
+    // add save success state
+    private val _saveSuccess = MutableStateFlow(false)
+    val saveSuccess: StateFlow<Boolean> = _saveSuccess.asStateFlow()
+
+    // add save loading state
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
     
     init {
         loadEquipmentConfigurations()
@@ -238,8 +251,37 @@ class CreateExerciseViewModel @Inject constructor(
     /**
      * updates the setup info
      */
-    fun updateSetupInfo(info: String) {
+    fun updateSetupInfo(info: List<String>) {
         _setupInfo.value = info
+    }
+    
+    /**
+     * adds a new setup info line
+     */
+    fun addSetupInfoLine() {
+        _setupInfo.value = _setupInfo.value + ""
+    }
+    
+    /**
+     * updates a specific setup info line
+     */
+    fun updateSetupInfoLine(index: Int, value: String) {
+        val currentList = _setupInfo.value.toMutableList()
+        if (index < currentList.size) {
+            currentList[index] = value
+            _setupInfo.value = currentList
+        }
+    }
+    
+    /**
+     * removes a setup info line
+     */
+    fun removeSetupInfoLine(index: Int) {
+        val currentList = _setupInfo.value.toMutableList()
+        if (index < currentList.size) {
+            currentList.removeAt(index)
+            _setupInfo.value = currentList
+        }
     }
 
     /**
@@ -346,10 +388,75 @@ class CreateExerciseViewModel @Inject constructor(
 
     
     /**
-     * saves the exercise (placeholder for future implementation)
+     * saves the exercise to the database
      */
     fun saveExercise() {
-        // todo: implement save logic
-        // this will likely involve calling a repository to save the exercise
+        viewModelScope.launch {
+            try {
+                _isSaving.value = true
+                
+                // validate required fields
+                if (_exerciseName.value.isBlank()) {
+                    // todo: handle validation error
+                    return@launch
+                }
+                
+                // determine equipment id based on selected configurations
+                val equipmentId = getSelectedEquipmentId()
+                if (equipmentId == null) {
+                    // todo: handle no equipment selected error
+                    return@launch
+                }
+                
+                // create exercise entity
+                val exercise = Exercise(
+                    id = UUID.randomUUID().toString(),
+                    name = _exerciseName.value.trim(),
+                    equipment_id = equipmentId,
+                    primaryMuscles = _primaryMuscles.value,
+                    auxiliaryMuscles = _auxiliaryMuscles.value,
+                    bodyweightContribution = BigDecimal(_bodyweightContribution.value.toString()),
+                    setup_info = if (_setupInfo.value.isNotEmpty()) {
+                        _setupInfo.value.filter { it.isNotBlank() } // filter out empty strings
+                    } else null
+                )
+                
+                // save to database
+                exerciseRepository.insertExercise(exercise)
+                
+                // set success state
+                _saveSuccess.value = true
+                
+            } catch (e: Exception) {
+                // todo: handle save error
+                e.printStackTrace()
+            } finally {
+                _isSaving.value = false
+            }
+        }
+    }
+    
+    /**
+     * determines the equipment id based on selected configurations
+     * prioritizes specific equipment configurations over general equipment types
+     */
+    private fun getSelectedEquipmentId(): String? {
+        // check for specific equipment configurations first
+        _selectedBarbell.value?.let { return it.equipment.id }
+        _selectedSmithMachine.value?.let { return it.equipment.id }
+        _selectedCableStack.value?.let { return it.equipment.id }
+        _selectedResistanceMachine.value?.let { return it.equipment.id }
+        
+        // if no specific equipment is selected, we need to handle general equipment types
+        // for now, return null to indicate no equipment selected
+        // todo: implement logic for general equipment types if needed
+        return null
+    }
+    
+    /**
+     * resets the save success state
+     */
+    fun resetSaveSuccess() {
+        _saveSuccess.value = false
     }
 } 

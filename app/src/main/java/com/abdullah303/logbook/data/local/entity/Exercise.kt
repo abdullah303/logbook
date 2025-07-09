@@ -29,5 +29,5 @@ data class Exercise(
     val primaryMuscles: List<Muscles>,
     val auxiliaryMuscles: List<Muscles>,
     val bodyweightContribution: BigDecimal,
-    val setup_info: String?
+    val setup_info: List<String>?
 )

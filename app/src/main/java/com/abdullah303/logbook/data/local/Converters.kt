@@ -118,4 +118,19 @@ class Converters {
             }
         }
     }
+    
+    // List<String> conversions
+    @TypeConverter
+    fun fromStringList(value: List<String>?): String? {
+        return value?.joinToString("|||") // using triple pipe as separator to avoid conflicts with normal text
+    }
+    
+    @TypeConverter
+    fun toStringList(value: String?): List<String>? {
+        return if (value.isNullOrEmpty()) {
+            null
+        } else {
+            value.split("|||").map { it.trim() }
+        }
+    }
 } 
