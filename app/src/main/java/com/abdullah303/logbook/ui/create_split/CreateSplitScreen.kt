@@ -41,10 +41,12 @@ import com.abdullah303.logbook.ui.components.InlineEditableText
 fun CreateSplitScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit = {},
+    onNavigateToCreateExercise: () -> Unit = {},
     viewModel: CreateSplitViewModel = hiltViewModel()
 ) {
     val navigationState = CreateSplitScreenNavigation(
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onNavigateToCreateExercise = onNavigateToCreateExercise
     )
 
     val splitTitle by viewModel.splitTitle.collectAsState()
@@ -166,6 +168,13 @@ fun CreateSplitScreen(
                     scope.launch {
                         bottomSheetState.hide()
                     }
+                },
+                onNavigateToCreateExercise = {
+                    showExerciseList = false
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }
+                    navigationState.onNavigateToCreateExercise()
                 },
                 sheetState = bottomSheetState,
                 maxHeightFraction = 0.75f

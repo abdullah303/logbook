@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.abdullah303.logbook.ui.create_exercise.CreateExerciseScreen
 import com.abdullah303.logbook.ui.create_split.CreateSplitScreen
 import com.abdullah303.logbook.ui.home.HomeScreen
 
@@ -33,6 +34,18 @@ fun LogbookNavigation(
         // create split screen
         composable(Routes.CreateSplit.route) {
             CreateSplitScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToCreateExercise = {
+                    navController.navigate(Routes.CreateExercise.route)
+                }
+            )
+        }
+        
+        // create exercise screen
+        composable(Routes.CreateExercise.route) {
+            CreateExerciseScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

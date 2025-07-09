@@ -36,6 +36,7 @@ fun ExerciseListBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
     onAddExercise: () -> Unit = {},
+    onNavigateToCreateExercise: () -> Unit = {},
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f
 ) {
@@ -81,12 +82,12 @@ fun ExerciseListBottomSheet(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 IconButton(
-                    onClick = onAddExercise,
+                    onClick = onNavigateToCreateExercise,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add Exercise",
+                        contentDescription = "Create Exercise",
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
