@@ -1,4 +1,4 @@
-package com.abdullah303.logbook.ui.components
+package com.abdullah303.logbook.ui.create_split.components
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,10 +14,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
@@ -31,6 +30,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.abdullah303.logbook.ui.components.InlineEditableText
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -91,7 +91,7 @@ fun DayButtonGroup(
                                 onDone = onRenameDayFinished,
                                 startInEditMode = true,
                                 singleLine = true,
-                                textStyle = androidx.compose.material3.LocalTextStyle.current.copy(
+                                textStyle = LocalTextStyle.current.copy(
                                     textAlign = TextAlign.Center
                                 )
                             )
@@ -159,7 +159,7 @@ fun DayButtonGroup(
                                 onDone = onRenameDayFinished,
                                 startInEditMode = true,
                                 singleLine = true,
-                                textStyle = androidx.compose.material3.LocalTextStyle.current.copy(
+                                textStyle = LocalTextStyle.current.copy(
                                     textAlign = TextAlign.Center
                                 )
                             )

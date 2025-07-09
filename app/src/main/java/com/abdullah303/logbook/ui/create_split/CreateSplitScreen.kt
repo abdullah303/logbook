@@ -3,8 +3,11 @@ package com.abdullah303.logbook.ui.create_split
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,7 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.abdullah303.logbook.ui.components.BubbleContextMenu
-import com.abdullah303.logbook.ui.components.DayButtonGroup
+import com.abdullah303.logbook.ui.create_split.components.DayButtonGroup
+import com.abdullah303.logbook.ui.create_split.components.DayContainer
 import com.abdullah303.logbook.ui.components.InlineEditableText
 
 @Composable
@@ -48,7 +52,10 @@ fun CreateSplitScreen(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             InlineEditableText(
                 text = splitTitle,
                 modifier = Modifier
@@ -79,7 +86,7 @@ fun CreateSplitScreen(
                 onPositionUpdate = { index, offset ->
                     dayButtonPositions[index] = offset
                 },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp),
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp),
                 renamingIndex = renamingDayIndex,
                 onRenameDay = { index, newName ->
                     viewModel.renameDay(index, newName)
@@ -88,6 +95,13 @@ fun CreateSplitScreen(
                     renamingDayIndex = null
                 }
             )
+
+            // day container that takes the rest of the screen
+            if (days.isNotEmpty() && selectedDayIndex < days.size) {
+                DayContainer(
+                    dayName = days[selectedDayIndex]
+                )
+            }
         }
 
         BubbleContextMenu(
