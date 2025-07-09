@@ -6,14 +6,12 @@ import androidx.compose.runtime.Composable
 fun CreateExerciseScreenNavigation(
     onNavigateBack: () -> Unit,
     onNavigateToCreateSmithMachine: () -> Unit = {},
-    onNavigateToCreateBarbell: () -> Unit = {},
     onNavigateToCreateCableStack: () -> Unit = {},
     onNavigateToCreateResistanceMachine: () -> Unit = {}
 ): CreateExerciseScreenNavigationState {
     return CreateExerciseScreenNavigationState(
         onNavigateBack = onNavigateBack,
         onNavigateToCreateSmithMachine = onNavigateToCreateSmithMachine,
-        onNavigateToCreateBarbell = onNavigateToCreateBarbell,
         onNavigateToCreateCableStack = onNavigateToCreateCableStack,
         onNavigateToCreateResistanceMachine = onNavigateToCreateResistanceMachine
     )
@@ -22,7 +20,6 @@ fun CreateExerciseScreenNavigation(
 data class CreateExerciseScreenNavigationState(
     val onNavigateBack: () -> Unit,
     val onNavigateToCreateSmithMachine: () -> Unit,
-    val onNavigateToCreateBarbell: () -> Unit,
     val onNavigateToCreateCableStack: () -> Unit,
     val onNavigateToCreateResistanceMachine: () -> Unit
 ) 

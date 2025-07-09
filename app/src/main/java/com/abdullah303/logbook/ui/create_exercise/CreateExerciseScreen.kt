@@ -364,8 +364,9 @@ fun CreateExerciseScreen(
                         smithMachineSheetState.hide()
                     }
                 },
-                onNavigateToCreateSmithMachine = {
-                    navigationState.onNavigateToCreateSmithMachine()
+                onSmithMachineCreated = {
+                    // refresh smith machine configurations after creation
+                    // this would typically trigger a reload of the data
                     showSmithMachineSelection = false
                     scope.launch {
                         smithMachineSheetState.hide()
@@ -397,8 +398,9 @@ fun CreateExerciseScreen(
                         barbellSheetState.hide()
                     }
                 },
-                onNavigateToCreateBarbell = {
-                    navigationState.onNavigateToCreateBarbell()
+                onBarbellCreated = {
+                    // refresh barbell configurations after creation
+                    // this would typically trigger a reload of the data
                     showBarbellSelection = false
                     scope.launch {
                         barbellSheetState.hide()
