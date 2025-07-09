@@ -31,107 +31,19 @@ fun ResistanceMachineDisplayCard(
     onClearSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+    // convert resistance machine configuration to unified equipment configuration
+    val unifiedConfiguration = selectedResistanceMachine?.let { resistanceMachineConfig ->
+        EquipmentConfiguration.ResistanceMachineEquipment(
+            equipment = resistanceMachineConfig.equipment,
+            resistanceMachineInfo = resistanceMachineConfig.resistanceMachineInfo
         )
-        
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onCardClick() },
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceDim
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            if (selectedResistanceMachine == null) {
-                Text(
-                    text = "Tap to select resistance machine",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
-            } else {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = selectedResistanceMachine.equipment.name,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Medium
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        // show type
-                        Text(
-                            text = "Type: ${selectedResistanceMachine.resistanceMachineInfo.type.name.lowercase().replace('_', ' ')}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        
-                        Spacer(modifier = Modifier.height(2.dp))
-                        
-                        // show type-specific information
-                        when (selectedResistanceMachine.resistanceMachineInfo) {
-                            is PinLoadedEquipmentInfo -> {
-                                val weightUnit = selectedResistanceMachine.equipment.weight_unit.name.lowercase()
-                                Text(
-                                    text = "Weight Range: ${selectedResistanceMachine.resistanceMachineInfo.min_weight} - ${selectedResistanceMachine.resistanceMachineInfo.max_weight} $weightUnit",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "Increment: ${selectedResistanceMachine.resistanceMachineInfo.increment} $weightUnit",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            is PlateLoadedEquipmentInfo -> {
-                                val weightUnit = selectedResistanceMachine.equipment.weight_unit.name.lowercase()
-                                Text(
-                                    text = "Base Weight: ${selectedResistanceMachine.resistanceMachineInfo.base_machine_weight} $weightUnit",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = "Number of Pegs: ${selectedResistanceMachine.resistanceMachineInfo.num_pegs}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    IconButton(
-                        onClick = onClearSelection
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Clear selection",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
     }
+
+    EquipmentDisplayCard(
+        title = title,
+        selectedConfiguration = unifiedConfiguration,
+        onCardClick = onCardClick,
+        onClearSelection = onClearSelection,
+        modifier = modifier
+    )
 } 

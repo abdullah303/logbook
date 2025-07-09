@@ -31,6 +31,28 @@ fun CableStackDisplayCard(
     onClearSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // convert cable stack configuration to unified equipment configuration
+    val unifiedConfiguration = selectedCableStack?.let { cableStackConfig ->
+        cableStackConfig.equipment.withCableStackInfo(cableStackConfig.cableStackInfo)
+    }
+
+    EquipmentDisplayCard(
+        title = title,
+        selectedConfiguration = unifiedConfiguration,
+        onCardClick = onCardClick,
+        onClearSelection = onClearSelection,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun EquipmentDisplayCard(
+    title: String,
+    selectedConfiguration: EquipmentConfiguration?,
+    onCardClick: () -> Unit,
+    onClearSelection: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -49,9 +71,9 @@ fun CableStackDisplayCard(
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            if (selectedCableStack == null) {
+            if (selectedConfiguration == null) {
                 Text(
-                    text = "Tap to select cable stack",
+                    text = "Tap to select configuration",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -70,29 +92,26 @@ fun CableStackDisplayCard(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = selectedCableStack.equipment.name,
+                            text = selectedConfiguration.equipment.name,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Medium
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        val weightUnit = selectedCableStack.equipment.weight_unit.name.lowercase()
-                        Text(
-                            text = "Weight Range: ${selectedCableStack.cableStackInfo.min_weight} - ${selectedCableStack.cableStackInfo.max_weight} $weightUnit",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        
-                        Spacer(modifier = Modifier.height(2.dp))
-                        
-                        Text(
-                            text = "Increment: ${selectedCableStack.cableStackInfo.increment} $weightUnit",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        // use the unified display system
+                        val displayInfo = selectedConfiguration.getDisplayInfo()
+                        if (displayInfo.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            displayInfo.forEach { info ->
+                                Text(
+                                    text = info,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                     
                     Spacer(modifier = Modifier.width(8.dp))

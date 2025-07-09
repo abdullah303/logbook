@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
+import com.abdullah303.logbook.ui.create_exercise.components.CableStackConfiguration
 
 @HiltViewModel
 class CreateCableStackViewModel @Inject constructor(
@@ -46,7 +47,7 @@ class CreateCableStackViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(weightUnit = weightUnit)
     }
 
-    fun createCableStack(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun createCableStack(onSuccess: (CableStackConfiguration) -> Unit, onError: (String) -> Unit) {
         val currentState = _uiState.value
         
         // validate inputs
@@ -120,10 +121,16 @@ class CreateCableStackViewModel @Inject constructor(
                 equipmentRepository.insertEquipment(equipment)
                 cableStackInfoRepository.insertCableStackInfo(cableStackInfo)
                 
+                // create cable stack configuration to return
+                val cableStackConfiguration = CableStackConfiguration(
+                    equipment = equipment,
+                    cableStackInfo = cableStackInfo
+                )
+                
                 // reset state after successful creation
                 resetState()
                 
-                onSuccess()
+                onSuccess(cableStackConfiguration)
             } catch (e: Exception) {
                 onError("Failed to create cable stack: ${e.message}")
             }

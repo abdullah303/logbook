@@ -8,6 +8,7 @@ import com.abdullah303.logbook.data.model.EquipmentType
 import com.abdullah303.logbook.data.model.WeightUnit
 import com.abdullah303.logbook.data.repository.BarbellInfoRepository
 import com.abdullah303.logbook.data.repository.EquipmentRepository
+import com.abdullah303.logbook.ui.create_exercise.components.BarbellConfiguration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,7 +39,7 @@ class CreateBarbellViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(weightUnit = weightUnit)
     }
 
-    fun createBarbell(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun createBarbell(onSuccess: (BarbellConfiguration) -> Unit, onError: (String) -> Unit) {
         val currentState = _uiState.value
         
         // validate inputs
@@ -80,10 +81,16 @@ class CreateBarbellViewModel @Inject constructor(
                 equipmentRepository.insertEquipment(equipment)
                 barbellInfoRepository.insertBarbellInfo(barbellInfo)
                 
+                // create barbell configuration to return
+                val barbellConfiguration = BarbellConfiguration(
+                    equipment = equipment,
+                    barbellInfo = barbellInfo
+                )
+                
                 // reset state after successful creation
                 resetState()
                 
-                onSuccess()
+                onSuccess(barbellConfiguration)
             } catch (e: Exception) {
                 onError("Failed to create barbell: ${e.message}")
             }

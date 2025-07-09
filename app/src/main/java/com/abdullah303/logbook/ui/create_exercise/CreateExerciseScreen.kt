@@ -20,20 +20,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.launch
 import com.abdullah303.logbook.ui.create_exercise.components.BodyweightContributionCard
-import com.abdullah303.logbook.ui.create_exercise.components.EquipmentSelectionCard
 import com.abdullah303.logbook.ui.create_exercise.components.EquipmentSelectionBottomSheet
 import com.abdullah303.logbook.ui.create_exercise.components.ExerciseNameCard
 import com.abdullah303.logbook.ui.create_exercise.components.MuscleSelectionCard
 import com.abdullah303.logbook.ui.create_exercise.components.MuscleSelectionBottomSheet
 import com.abdullah303.logbook.ui.create_exercise.components.SetupInfoCard
-import com.abdullah303.logbook.ui.create_exercise.components.BarbellDisplayCard
 import com.abdullah303.logbook.ui.create_exercise.components.BarbellSelectionBottomSheet
-import com.abdullah303.logbook.ui.create_exercise.components.CableStackDisplayCard
 import com.abdullah303.logbook.ui.create_exercise.components.CableStackSelectionBottomSheet
-import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineDisplayCard
 import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineSelectionBottomSheet
-import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineDisplayCard
 import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineSelectionBottomSheet
+import com.abdullah303.logbook.ui.create_exercise.components.UnifiedEquipmentCard
+import com.abdullah303.logbook.ui.create_exercise.components.BarbellConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.CableStackConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.EquipmentConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.withBarbellInfo
+import com.abdullah303.logbook.ui.create_exercise.components.withSmithMachineInfo
+import com.abdullah303.logbook.ui.create_exercise.components.withCableStackInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -127,74 +131,33 @@ fun CreateExerciseScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 
-                // equipment selection card
-                EquipmentSelectionCard(
+                // unified equipment card
+                UnifiedEquipmentCard(
                     selectedEquipment = equipment,
+                    selectedBarbell = selectedBarbell,
+                    selectedSmithMachine = selectedSmithMachine,
+                    selectedCableStack = selectedCableStack,
+                    selectedResistanceMachine = selectedResistanceMachine,
                     onCardClick = {
                         showEquipmentSelection = true
                     },
+                    onBarbellClick = {
+                        showBarbellSelection = true
+                    },
+                    onSmithMachineClick = {
+                        showSmithMachineSelection = true
+                    },
+                    onCableStackClick = {
+                        showCableStackSelection = true
+                    },
+                    onResistanceMachineClick = {
+                        showResistanceMachineSelection = true
+                    },
+                    onClearCustomEquipment = {
+                        viewModel.clearAllCustomEquipment()
+                    },
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
-                
-                // smith machine display card (only shown when smith machine is selected)
-                if (selectedSmithMachine != null) {
-                    SmithMachineDisplayCard(
-                        title = "Selected Smith Machine",
-                        selectedSmithMachine = selectedSmithMachine,
-                        onCardClick = {
-                            showSmithMachineSelection = true
-                        },
-                        onClearSelection = {
-                            viewModel.clearSelectedSmithMachine()
-                        },
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-                
-                // barbell display card (only shown when barbell is selected)
-                if (selectedBarbell != null) {
-                    BarbellDisplayCard(
-                        title = "Selected Barbell",
-                        selectedBarbell = selectedBarbell,
-                        onCardClick = {
-                            showBarbellSelection = true
-                        },
-                        onClearSelection = {
-                            viewModel.clearSelectedBarbell()
-                        },
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-                
-                // cable stack display card (only shown when cable stack is selected)
-                if (selectedCableStack != null) {
-                    CableStackDisplayCard(
-                        title = "Selected Cable Stack",
-                        selectedCableStack = selectedCableStack,
-                        onCardClick = {
-                            showCableStackSelection = true
-                        },
-                        onClearSelection = {
-                            viewModel.clearSelectedCableStack()
-                        },
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-                
-                // resistance machine display card (only shown when resistance machine is selected)
-                if (selectedResistanceMachine != null) {
-                    ResistanceMachineDisplayCard(
-                        title = "Selected Resistance Machine",
-                        selectedResistanceMachine = selectedResistanceMachine,
-                        onCardClick = {
-                            showResistanceMachineSelection = true
-                        },
-                        onClearSelection = {
-                            viewModel.clearSelectedResistanceMachine()
-                        },
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
                 
                 // primary muscles selection card
                 MuscleSelectionCard(
@@ -364,9 +327,11 @@ fun CreateExerciseScreen(
                         smithMachineSheetState.hide()
                     }
                 },
-                onSmithMachineCreated = {
+                onSmithMachineCreated = { smithMachineConfiguration ->
                     // refresh smith machine configurations after creation
-                    // this would typically trigger a reload of the data
+                    viewModel.refreshEquipmentConfigurations()
+                    // auto-select the newly created smith machine
+                    viewModel.selectSmithMachine(smithMachineConfiguration)
                     showSmithMachineSelection = false
                     scope.launch {
                         smithMachineSheetState.hide()
@@ -398,9 +363,11 @@ fun CreateExerciseScreen(
                         barbellSheetState.hide()
                     }
                 },
-                onBarbellCreated = {
+                onBarbellCreated = { barbellConfiguration ->
                     // refresh barbell configurations after creation
-                    // this would typically trigger a reload of the data
+                    viewModel.refreshEquipmentConfigurations()
+                    // auto-select the newly created barbell
+                    viewModel.selectBarbell(barbellConfiguration)
                     showBarbellSelection = false
                     scope.launch {
                         barbellSheetState.hide()
@@ -432,9 +399,11 @@ fun CreateExerciseScreen(
                         cableStackSheetState.hide()
                     }
                 },
-                onCableStackCreated = {
+                onCableStackCreated = { cableStackConfiguration ->
                     // refresh cable stack configurations after creation
-                    // this would typically trigger a reload of the data
+                    viewModel.refreshEquipmentConfigurations()
+                    // auto-select the newly created cable stack
+                    viewModel.selectCableStack(cableStackConfiguration)
                     showCableStackSelection = false
                     scope.launch {
                         cableStackSheetState.hide()
@@ -466,9 +435,11 @@ fun CreateExerciseScreen(
                         resistanceMachineSheetState.hide()
                     }
                 },
-                onResistanceMachineCreated = {
+                onResistanceMachineCreated = { resistanceMachineConfiguration ->
                     // refresh resistance machine configurations after creation
-                    // this would typically trigger a reload of the data
+                    viewModel.refreshEquipmentConfigurations()
+                    // auto-select the newly created resistance machine
+                    viewModel.selectResistanceMachine(resistanceMachineConfiguration)
                     showResistanceMachineSelection = false
                     scope.launch {
                         resistanceMachineSheetState.hide()

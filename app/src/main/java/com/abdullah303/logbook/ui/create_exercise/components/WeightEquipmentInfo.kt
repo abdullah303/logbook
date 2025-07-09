@@ -99,38 +99,111 @@ data class ResistanceMachineEquipmentConfiguration(
     val resistanceMachineInfo: ResistanceMachineEquipmentInfo
 )
 
-// convenience functions to create configurations
-fun Equipment.withBarbellInfo(barbellInfo: BarbellInfo): WeightEquipmentConfiguration {
-    return WeightEquipmentConfiguration(
+// sealed interface for all equipment configurations
+sealed interface EquipmentConfiguration {
+    val equipment: Equipment
+    
+    data class WeightEquipment(
+        override val equipment: Equipment,
+        val weightInfo: WeightEquipmentInfo
+    ) : EquipmentConfiguration
+    
+    data class CableStackEquipment(
+        override val equipment: Equipment,
+        val cableStackInfo: CableStackEquipmentInfo
+    ) : EquipmentConfiguration
+    
+    data class ResistanceMachineEquipment(
+        override val equipment: Equipment,
+        val resistanceMachineInfo: ResistanceMachineEquipmentInfo
+    ) : EquipmentConfiguration
+    
+    data class SimpleEquipment(
+        override val equipment: Equipment
+    ) : EquipmentConfiguration
+}
+
+// helper functions to get display information for each equipment type
+fun EquipmentConfiguration.getDisplayInfo(): List<String> {
+    return when (this) {
+        is EquipmentConfiguration.WeightEquipment -> {
+            val weightUnit = equipment.weight_unit.name.lowercase()
+            listOf("Bar Weight: ${weightInfo.bar_weight} $weightUnit")
+        }
+        is EquipmentConfiguration.CableStackEquipment -> {
+            val weightUnit = equipment.weight_unit.name.lowercase()
+            listOf(
+                "Weight Range: ${cableStackInfo.min_weight} - ${cableStackInfo.max_weight} $weightUnit",
+                "Increment: ${cableStackInfo.increment} $weightUnit"
+            )
+        }
+        is EquipmentConfiguration.ResistanceMachineEquipment -> {
+            val typeInfo = "Type: ${resistanceMachineInfo.type.name.lowercase().replace('_', ' ')}"
+            val additionalInfo = when (resistanceMachineInfo) {
+                is PinLoadedEquipmentInfo -> {
+                    val weightUnit = equipment.weight_unit.name.lowercase()
+                    listOf(
+                        "Weight Range: ${resistanceMachineInfo.min_weight} - ${resistanceMachineInfo.max_weight} $weightUnit",
+                        "Increment: ${resistanceMachineInfo.increment} $weightUnit"
+                    )
+                }
+                is PlateLoadedEquipmentInfo -> {
+                    val weightUnit = equipment.weight_unit.name.lowercase()
+                    listOf(
+                        "Base Weight: ${resistanceMachineInfo.base_machine_weight} $weightUnit",
+                        "Number of Pegs: ${resistanceMachineInfo.num_pegs}"
+                    )
+                }
+                else -> emptyList()
+            }
+            listOf(typeInfo) + additionalInfo
+        }
+        is EquipmentConfiguration.SimpleEquipment -> {
+            emptyList()
+        }
+    }
+}
+
+// convenience functions to create unified configurations
+fun Equipment.withBarbellInfo(barbellInfo: BarbellInfo): EquipmentConfiguration.WeightEquipment {
+    return EquipmentConfiguration.WeightEquipment(
         equipment = this,
         weightInfo = barbellInfo.toWeightEquipmentInfo()
     )
 }
 
-fun Equipment.withSmithMachineInfo(smithMachineInfo: SmithMachineInfo): WeightEquipmentConfiguration {
-    return WeightEquipmentConfiguration(
+fun Equipment.withSmithMachineInfo(smithMachineInfo: SmithMachineInfo): EquipmentConfiguration.WeightEquipment {
+    return EquipmentConfiguration.WeightEquipment(
         equipment = this,
         weightInfo = smithMachineInfo.toWeightEquipmentInfo()
     )
 }
 
-fun Equipment.withCableStackInfo(cableStackInfo: CableStackInfo): CableStackEquipmentConfiguration {
-    return CableStackEquipmentConfiguration(
+fun Equipment.withCableStackInfo(cableStackInfo: CableStackInfo): EquipmentConfiguration.CableStackEquipment {
+    return EquipmentConfiguration.CableStackEquipment(
         equipment = this,
         cableStackInfo = cableStackInfo.toCableStackEquipmentInfo()
     )
 }
 
-fun Equipment.withPinLoadedInfo(pinLoadedInfo: PinLoadedInfo, resistanceMachineInfo: ResistanceMachineInfo): ResistanceMachineEquipmentConfiguration {
-    return ResistanceMachineEquipmentConfiguration(
+fun Equipment.withPinLoadedInfo(pinLoadedInfo: PinLoadedInfo, resistanceMachineInfo: ResistanceMachineInfo): EquipmentConfiguration.ResistanceMachineEquipment {
+    return EquipmentConfiguration.ResistanceMachineEquipment(
         equipment = this,
         resistanceMachineInfo = pinLoadedInfo.toPinLoadedEquipmentInfo(resistanceMachineInfo)
     )
 }
 
-fun Equipment.withPlateLoadedInfo(plateLoadedInfo: PlateLoadedInfo, resistanceMachineInfo: ResistanceMachineInfo): ResistanceMachineEquipmentConfiguration {
-    return ResistanceMachineEquipmentConfiguration(
+fun Equipment.withPlateLoadedInfo(plateLoadedInfo: PlateLoadedInfo, resistanceMachineInfo: ResistanceMachineInfo): EquipmentConfiguration.ResistanceMachineEquipment {
+    return EquipmentConfiguration.ResistanceMachineEquipment(
         equipment = this,
         resistanceMachineInfo = plateLoadedInfo.toPlateLoadedEquipmentInfo(resistanceMachineInfo)
     )
-} 
+}
+
+fun Equipment.asSimpleEquipment(): EquipmentConfiguration.SimpleEquipment {
+    return EquipmentConfiguration.SimpleEquipment(equipment = this)
+}
+
+
+
+ 

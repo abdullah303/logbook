@@ -29,7 +29,7 @@ fun SmithMachineSelectionBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
     onSelectSmithMachine: (SmithMachineConfiguration) -> Unit = {},
-    onSmithMachineCreated: () -> Unit = {},
+    onSmithMachineCreated: (SmithMachineConfiguration) -> Unit = {},
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f
 ) {
@@ -37,20 +37,20 @@ fun SmithMachineSelectionBottomSheet(
     val createSmithMachineSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     
-    // convert smith machine configurations to generic weight equipment configurations
-    val weightEquipmentConfigurations = smithMachineConfigurations.map { smithConfig ->
+    // convert smith machine configurations to unified equipment configurations
+    val unifiedConfigurations = smithMachineConfigurations.map { smithConfig ->
         smithConfig.equipment.withSmithMachineInfo(smithConfig.smithMachineInfo)
     }
 
-    WeightEquipmentSelectionBottomSheet(
+    EquipmentSelectionBottomSheet(
         title = "Smith Machine Configurations",
-        configurations = weightEquipmentConfigurations,
+        configurations = unifiedConfigurations,
         modifier = modifier,
         onDismiss = onDismiss,
-        onSelectConfiguration = { weightConfig ->
+        onSelectConfiguration = { unifiedConfig ->
             // convert back to smith machine configuration
             val originalSmithConfig = smithMachineConfigurations.find { 
-                it.equipment.id == weightConfig.equipment.id 
+                it.equipment.id == unifiedConfig.equipment.id 
             }
             originalSmithConfig?.let { onSelectSmithMachine(it) }
         },
@@ -75,8 +75,8 @@ fun SmithMachineSelectionBottomSheet(
                     createSmithMachineSheetState.hide()
                 }
             },
-            onSmithMachineCreated = {
-                onSmithMachineCreated()
+            onSmithMachineCreated = { smithMachineConfiguration ->
+                onSmithMachineCreated(smithMachineConfiguration)
                 showCreateSmithMachine = false
                 scope.launch {
                     createSmithMachineSheetState.hide()

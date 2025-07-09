@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.abdullah303.logbook.data.model.WeightUnit
 import com.abdullah303.logbook.ui.components.FormInputCard
+import com.abdullah303.logbook.ui.create_exercise.components.BarbellConfiguration
 import com.abdullah303.logbook.ui.components.FormSelectionCard
 import com.abdullah303.logbook.ui.components.GenericBottomSheet
 import com.abdullah303.logbook.ui.components.ValueSelectionBottomSheet
@@ -45,7 +46,7 @@ import com.abdullah303.logbook.ui.components.WeightUnitButtonGroup
 fun CreateBarbellBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
-    onBarbellCreated: () -> Unit = {},
+    onBarbellCreated: (BarbellConfiguration) -> Unit = { _ -> },
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f,
     viewModel: CreateBarbellViewModel = hiltViewModel()
@@ -152,8 +153,8 @@ fun CreateBarbellBottomSheet(
                 onClick = {
                     errorMessage = null // clear any previous error
                     viewModel.createBarbell(
-                        onSuccess = {
-                            onBarbellCreated()
+                        onSuccess = { barbellConfiguration ->
+                            onBarbellCreated(barbellConfiguration)
                             onDismiss()
                         },
                         onError = { error ->

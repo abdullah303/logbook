@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.abdullah303.logbook.data.model.ResistanceMachineType
 import com.abdullah303.logbook.data.model.WeightUnit
 import com.abdullah303.logbook.ui.components.FormInputCard
+import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineConfiguration
 import com.abdullah303.logbook.ui.components.FormSelectionCard
 import com.abdullah303.logbook.ui.components.GenericBottomSheet
 import com.abdullah303.logbook.ui.components.MachineTypeButtonGroup
@@ -48,7 +49,7 @@ import com.abdullah303.logbook.ui.components.WeightRangeCard
 fun CreateResistanceMachineBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
-    onResistanceMachineCreated: () -> Unit = {},
+    onResistanceMachineCreated: (ResistanceMachineConfiguration) -> Unit = { _ -> },
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f,
     viewModel: CreateResistanceMachineViewModel = hiltViewModel()
@@ -276,8 +277,8 @@ fun CreateResistanceMachineBottomSheet(
                 onClick = {
                     errorMessage = null
                     viewModel.createResistanceMachine(
-                        onSuccess = {
-                            onResistanceMachineCreated()
+                        onSuccess = { resistanceMachineConfiguration ->
+                            onResistanceMachineCreated(resistanceMachineConfiguration)
                             onDismiss()
                         },
                         onError = { error ->

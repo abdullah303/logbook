@@ -11,14 +11,14 @@ fun SmithMachineDisplayCard(
     onClearSelection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // convert smith machine configuration to generic weight equipment configuration
-    val weightEquipmentConfig = selectedSmithMachine?.let { smithConfig ->
+    // convert smith machine configuration to unified equipment configuration
+    val unifiedConfiguration = selectedSmithMachine?.let { smithConfig ->
         smithConfig.equipment.withSmithMachineInfo(smithConfig.smithMachineInfo)
     }
 
     WeightEquipmentDisplayCard(
         title = title,
-        selectedConfiguration = weightEquipmentConfig,
+        selectedConfiguration = unifiedConfiguration,
         onCardClick = onCardClick,
         onClearSelection = onClearSelection,
         modifier = modifier

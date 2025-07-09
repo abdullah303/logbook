@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.abdullah303.logbook.data.model.WeightUnit
 import com.abdullah303.logbook.ui.components.FormInputCard
+import com.abdullah303.logbook.ui.create_exercise.components.CableStackConfiguration
 import com.abdullah303.logbook.ui.components.GenericBottomSheet
 import com.abdullah303.logbook.ui.components.ValueSelectionBottomSheet
 import com.abdullah303.logbook.ui.components.ValueSelectionType
@@ -42,7 +43,7 @@ import com.abdullah303.logbook.ui.components.WeightRangeCard
 fun CreateCableStackBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
-    onCableStackCreated: () -> Unit = {},
+    onCableStackCreated: (CableStackConfiguration) -> Unit = { _ -> },
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f,
     viewModel: CreateCableStackViewModel = hiltViewModel()
@@ -177,8 +178,8 @@ fun CreateCableStackBottomSheet(
                 onClick = {
                     errorMessage = null // clear any previous error
                     viewModel.createCableStack(
-                        onSuccess = {
-                            onCableStackCreated()
+                        onSuccess = { cableStackConfiguration ->
+                            onCableStackCreated(cableStackConfiguration)
                             onDismiss()
                         },
                         onError = { error ->

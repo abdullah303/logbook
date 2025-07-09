@@ -8,6 +8,7 @@ import com.abdullah303.logbook.data.model.EquipmentType
 import com.abdullah303.logbook.data.model.WeightUnit
 import com.abdullah303.logbook.data.repository.SmithMachineInfoRepository
 import com.abdullah303.logbook.data.repository.EquipmentRepository
+import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineConfiguration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,7 +39,7 @@ class CreateSmithMachineViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(weightUnit = weightUnit)
     }
 
-    fun createSmithMachine(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun createSmithMachine(onSuccess: (SmithMachineConfiguration) -> Unit, onError: (String) -> Unit) {
         val currentState = _uiState.value
         
         // validate inputs
@@ -80,10 +81,16 @@ class CreateSmithMachineViewModel @Inject constructor(
                 equipmentRepository.insertEquipment(equipment)
                 smithMachineInfoRepository.insertSmithMachineInfo(smithMachineInfo)
                 
+                // create smith machine configuration to return
+                val smithMachineConfiguration = SmithMachineConfiguration(
+                    equipment = equipment,
+                    smithMachineInfo = smithMachineInfo
+                )
+                
                 // reset state after successful creation
                 resetState()
                 
-                onSuccess()
+                onSuccess(smithMachineConfiguration)
             } catch (e: Exception) {
                 onError("Failed to create smith machine: ${e.message}")
             }

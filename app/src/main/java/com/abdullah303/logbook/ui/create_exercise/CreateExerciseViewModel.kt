@@ -1,23 +1,47 @@
 package com.abdullah303.logbook.ui.create_exercise
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.abdullah303.logbook.data.model.EquipmentType
 import com.abdullah303.logbook.data.model.Muscles
+import com.abdullah303.logbook.data.model.ResistanceMachineType
+import com.abdullah303.logbook.data.repository.BarbellInfoRepository
+import com.abdullah303.logbook.data.repository.CableStackInfoRepository
+import com.abdullah303.logbook.data.repository.EquipmentRepository
+import com.abdullah303.logbook.data.repository.PinLoadedInfoRepository
+import com.abdullah303.logbook.data.repository.PlateLoadedInfoRepository
+import com.abdullah303.logbook.data.repository.ResistanceMachineInfoRepository
+import com.abdullah303.logbook.data.repository.SmithMachineInfoRepository
 import com.abdullah303.logbook.ui.create_exercise.components.BarbellConfiguration
 import com.abdullah303.logbook.ui.create_exercise.components.CableStackConfiguration
 import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineConfiguration
 import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.PinLoadedEquipmentInfo
+import com.abdullah303.logbook.ui.create_exercise.components.PlateLoadedEquipmentInfo
+import com.abdullah303.logbook.ui.create_exercise.components.toPinLoadedEquipmentInfo
+import com.abdullah303.logbook.ui.create_exercise.components.toPlateLoadedEquipmentInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 /**
  * viewmodel for managing create exercise screen state and business logic
  */
 @HiltViewModel
-class CreateExerciseViewModel @Inject constructor() : ViewModel() {
+class CreateExerciseViewModel @Inject constructor(
+    private val equipmentRepository: EquipmentRepository,
+    private val barbellInfoRepository: BarbellInfoRepository,
+    private val smithMachineInfoRepository: SmithMachineInfoRepository,
+    private val cableStackInfoRepository: CableStackInfoRepository,
+    private val resistanceMachineInfoRepository: ResistanceMachineInfoRepository,
+    private val pinLoadedInfoRepository: PinLoadedInfoRepository,
+    private val plateLoadedInfoRepository: PlateLoadedInfoRepository
+) : ViewModel() {
     
     private val _exerciseName = MutableStateFlow("")
     val exerciseName: StateFlow<String> = _exerciseName.asStateFlow()
@@ -61,6 +85,121 @@ class CreateExerciseViewModel @Inject constructor() : ViewModel() {
     private val _selectedResistanceMachine = MutableStateFlow<ResistanceMachineConfiguration?>(null)
     val selectedResistanceMachine: StateFlow<ResistanceMachineConfiguration?> = _selectedResistanceMachine.asStateFlow()
     
+    init {
+        loadEquipmentConfigurations()
+    }
+    
+    /**
+     * loads all equipment configurations from the database
+     */
+    private fun loadEquipmentConfigurations() {
+        viewModelScope.launch {
+            loadBarbellConfigurations()
+            loadSmithMachineConfigurations()
+            loadCableStackConfigurations()
+            loadResistanceMachineConfigurations()
+        }
+    }
+    
+    /**
+     * loads barbell configurations from the database
+     */
+    private fun loadBarbellConfigurations() {
+        viewModelScope.launch {
+            combine(
+                equipmentRepository.getEquipmentByType(EquipmentType.BARBELL),
+                barbellInfoRepository.getAllBarbellInfoFlow()
+            ) { equipmentList, barbellInfoList ->
+                equipmentList.mapNotNull { equipment ->
+                    val barbellInfo = barbellInfoList.find { it.equipment_id == equipment.id }
+                    if (barbellInfo != null) {
+                        BarbellConfiguration(equipment, barbellInfo)
+                    } else null
+                }
+            }.collect { configurations ->
+                _barbellConfigurations.value = configurations
+            }
+        }
+    }
+    
+    /**
+     * loads smith machine configurations from the database
+     */
+    private fun loadSmithMachineConfigurations() {
+        viewModelScope.launch {
+            combine(
+                equipmentRepository.getEquipmentByType(EquipmentType.SMITH_MACHINE),
+                smithMachineInfoRepository.getAllSmithMachineInfoFlow()
+            ) { equipmentList, smithMachineInfoList ->
+                equipmentList.mapNotNull { equipment ->
+                    val smithMachineInfo = smithMachineInfoList.find { it.equipment_id == equipment.id }
+                    if (smithMachineInfo != null) {
+                        SmithMachineConfiguration(equipment, smithMachineInfo)
+                    } else null
+                }
+            }.collect { configurations ->
+                _smithMachineConfigurations.value = configurations
+            }
+        }
+    }
+    
+    /**
+     * loads cable stack configurations from the database
+     */
+    private fun loadCableStackConfigurations() {
+        viewModelScope.launch {
+            combine(
+                equipmentRepository.getEquipmentByType(EquipmentType.CABLE_STACK),
+                cableStackInfoRepository.getAllCableStackInfoFlow()
+            ) { equipmentList, cableStackInfoList ->
+                equipmentList.mapNotNull { equipment ->
+                    val cableStackInfo = cableStackInfoList.find { it.equipment_id == equipment.id }
+                    if (cableStackInfo != null) {
+                        CableStackConfiguration(equipment, cableStackInfo)
+                    } else null
+                }
+            }.collect { configurations ->
+                _cableStackConfigurations.value = configurations
+            }
+        }
+    }
+    
+    /**
+     * loads resistance machine configurations from the database
+     */
+    private fun loadResistanceMachineConfigurations() {
+        viewModelScope.launch {
+            combine(
+                equipmentRepository.getEquipmentByType(EquipmentType.RESISTANCE_MACHINE),
+                resistanceMachineInfoRepository.getAllResistanceMachineInfoFlow(),
+                pinLoadedInfoRepository.getAllPinLoadedInfoFlow(),
+                plateLoadedInfoRepository.getAllPlateLoadedInfoFlow()
+            ) { equipmentList, resistanceMachineInfoList, pinLoadedInfoList, plateLoadedInfoList ->
+                equipmentList.mapNotNull { equipment ->
+                    val resistanceMachineInfo = resistanceMachineInfoList.find { it.equipment_id == equipment.id }
+                    if (resistanceMachineInfo != null) {
+                        // determine the specific type of resistance machine
+                        val specificInfo = when (resistanceMachineInfo.type) {
+                            ResistanceMachineType.PIN_LOADED -> {
+                                pinLoadedInfoList.find { it.resistance_machine_id == resistanceMachineInfo.equipment_id }
+                                    ?.toPinLoadedEquipmentInfo(resistanceMachineInfo)
+                            }
+                            ResistanceMachineType.PLATE_LOADED -> {
+                                plateLoadedInfoList.find { it.resistance_machine_id == resistanceMachineInfo.equipment_id }
+                                    ?.toPlateLoadedEquipmentInfo(resistanceMachineInfo)
+                            }
+                        }
+                        if (specificInfo != null) {
+                            ResistanceMachineConfiguration(equipment, specificInfo)
+                        } else null
+                    } else null
+                }
+            }.collect { configurations ->
+                _resistanceMachineConfigurations.value = configurations
+            }
+        }
+    }
+
     /**
      * updates the exercise name
      */
@@ -186,6 +325,25 @@ class CreateExerciseViewModel @Inject constructor() : ViewModel() {
     fun clearSelectedResistanceMachine() {
         _selectedResistanceMachine.value = null
     }
+    
+    /**
+     * clears all selected custom equipment configurations
+     */
+    fun clearAllCustomEquipment() {
+        _selectedSmithMachine.value = null
+        _selectedBarbell.value = null
+        _selectedCableStack.value = null
+        _selectedResistanceMachine.value = null
+    }
+    
+    /**
+     * refreshes equipment configurations after new equipment is created
+     */
+    fun refreshEquipmentConfigurations() {
+        loadEquipmentConfigurations()
+    }
+    
+
     
     /**
      * saves the exercise (placeholder for future implementation)

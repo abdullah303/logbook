@@ -39,15 +39,16 @@ import com.abdullah303.logbook.ui.components.GenericBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeightEquipmentSelectionBottomSheet(
+fun EquipmentSelectionBottomSheet(
     title: String,
-    configurations: List<WeightEquipmentConfiguration>,
+    configurations: List<EquipmentConfiguration>,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
-    onSelectConfiguration: (WeightEquipmentConfiguration) -> Unit = {},
+    onSelectConfiguration: (EquipmentConfiguration) -> Unit = {},
     onNavigateToCreateConfiguration: () -> Unit = {},
     sheetState: SheetState,
-    maxHeightFraction: Float = 0.75f
+    maxHeightFraction: Float = 0.75f,
+    showCreateButton: Boolean = true
 ) {
     var searchQuery by remember { mutableStateOf("") }
     
@@ -63,7 +64,7 @@ fun WeightEquipmentSelectionBottomSheet(
         sheetState = sheetState,
         maxHeightFraction = maxHeightFraction
     ) {
-        // search bar with add button
+        // search bar with optional add button
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -85,25 +86,27 @@ fun WeightEquipmentSelectionBottomSheet(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            if (showCreateButton) {
+                Spacer(modifier = Modifier.width(12.dp))
 
-            Card(
-                modifier = Modifier.size(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                IconButton(
-                    onClick = onNavigateToCreateConfiguration,
-                    modifier = Modifier.fillMaxWidth()
+                Card(
+                    modifier = Modifier.size(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Create Configuration",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
+                    IconButton(
+                        onClick = onNavigateToCreateConfiguration,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Create Configuration",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }
@@ -134,7 +137,7 @@ fun WeightEquipmentSelectionBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(filteredConfigurations) { configuration ->
-                    WeightEquipmentConfigurationCard(
+                    EquipmentConfigurationCard(
                         configuration = configuration,
                         onSelect = { onSelectConfiguration(configuration) }
                     )
@@ -145,8 +148,8 @@ fun WeightEquipmentSelectionBottomSheet(
 }
 
 @Composable
-private fun WeightEquipmentConfigurationCard(
-    configuration: WeightEquipmentConfiguration,
+private fun EquipmentConfigurationCard(
+    configuration: EquipmentConfiguration,
     onSelect: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -173,13 +176,59 @@ private fun WeightEquipmentConfigurationCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
             
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Text(
-                text = "Bar Weight: ${configuration.weightInfo.bar_weight} ${configuration.equipment.weight_unit.name.lowercase()}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // display additional info based on equipment type
+            val displayInfo = configuration.getDisplayInfo()
+            if (displayInfo.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                displayInfo.forEach { info ->
+                    Text(
+                        text = info,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
+}
+
+// legacy component for backward compatibility
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WeightEquipmentSelectionBottomSheet(
+    title: String,
+    configurations: List<WeightEquipmentConfiguration>,
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit = {},
+    onSelectConfiguration: (WeightEquipmentConfiguration) -> Unit = {},
+    onNavigateToCreateConfiguration: () -> Unit = {},
+    sheetState: SheetState,
+    maxHeightFraction: Float = 0.75f
+) {
+    // convert legacy configurations to new unified format
+    val unifiedConfigurations = configurations.map { config ->
+        EquipmentConfiguration.WeightEquipment(
+            equipment = config.equipment,
+            weightInfo = config.weightInfo
+        )
+    }
+    
+    EquipmentSelectionBottomSheet(
+        title = title,
+        configurations = unifiedConfigurations,
+        modifier = modifier,
+        onDismiss = onDismiss,
+        onSelectConfiguration = { unifiedConfig ->
+            // convert back to legacy format
+            val legacyConfig = WeightEquipmentConfiguration(
+                equipment = unifiedConfig.equipment,
+                weightInfo = (unifiedConfig as EquipmentConfiguration.WeightEquipment).weightInfo
+            )
+            onSelectConfiguration(legacyConfig)
+        },
+        onNavigateToCreateConfiguration = onNavigateToCreateConfiguration,
+        sheetState = sheetState,
+        maxHeightFraction = maxHeightFraction
+    )
 } 

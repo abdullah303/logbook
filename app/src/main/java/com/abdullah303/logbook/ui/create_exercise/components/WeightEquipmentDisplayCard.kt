@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun WeightEquipmentDisplayCard(
     title: String,
-    selectedConfiguration: WeightEquipmentConfiguration?,
+    selectedConfiguration: EquipmentConfiguration.WeightEquipment?,
     onCardClick: () -> Unit,
     onClearSelection: () -> Unit,
     modifier: Modifier = Modifier
@@ -79,11 +79,15 @@ fun WeightEquipmentDisplayCard(
                         
                         Spacer(modifier = Modifier.height(4.dp))
                         
-                        Text(
-                            text = "Bar Weight: ${selectedConfiguration.weightInfo.bar_weight} ${selectedConfiguration.equipment.weight_unit.name.lowercase()}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        // use the unified display system
+                        val displayInfo = selectedConfiguration.getDisplayInfo()
+                        displayInfo.forEach { info ->
+                            Text(
+                                text = info,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.width(8.dp))
@@ -101,4 +105,30 @@ fun WeightEquipmentDisplayCard(
             }
         }
     }
+}
+
+// legacy overload for backward compatibility
+@Composable
+fun WeightEquipmentDisplayCard(
+    title: String,
+    selectedConfiguration: WeightEquipmentConfiguration?,
+    onCardClick: () -> Unit,
+    onClearSelection: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // convert legacy type to new unified type
+    val unifiedConfiguration = selectedConfiguration?.let { legacyConfig ->
+        EquipmentConfiguration.WeightEquipment(
+            equipment = legacyConfig.equipment,
+            weightInfo = legacyConfig.weightInfo
+        )
+    }
+    
+    WeightEquipmentDisplayCard(
+        title = title,
+        selectedConfiguration = unifiedConfiguration,
+        onCardClick = onCardClick,
+        onClearSelection = onClearSelection,
+        modifier = modifier
+    )
 } 

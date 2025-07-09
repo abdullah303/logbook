@@ -21,6 +21,8 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
+import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.toResistanceMachineEquipmentInfo
 
 @HiltViewModel
 class CreateResistanceMachineViewModel @Inject constructor(
@@ -67,7 +69,7 @@ class CreateResistanceMachineViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(baseMachineWeight = baseWeight)
     }
 
-    fun createResistanceMachine(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun createResistanceMachine(onSuccess: (ResistanceMachineConfiguration) -> Unit, onError: (String) -> Unit) {
         val currentState = _uiState.value
         
         // validate name
@@ -129,10 +131,16 @@ class CreateResistanceMachineViewModel @Inject constructor(
                     }
                 }
                 
+                // create resistance machine configuration to return
+                val resistanceMachineConfiguration = ResistanceMachineConfiguration(
+                    equipment = equipment,
+                    resistanceMachineInfo = resistanceMachineInfo.toResistanceMachineEquipmentInfo()
+                )
+                
                 // reset state after successful creation
                 resetState()
                 
-                onSuccess()
+                onSuccess(resistanceMachineConfiguration)
             } catch (e: Exception) {
                 onError("failed to create resistance machine: ${e.message}")
             }

@@ -29,7 +29,7 @@ fun BarbellSelectionBottomSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
     onSelectBarbell: (BarbellConfiguration) -> Unit = {},
-    onBarbellCreated: () -> Unit = {},
+    onBarbellCreated: (BarbellConfiguration) -> Unit = {},
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f
 ) {
@@ -37,20 +37,20 @@ fun BarbellSelectionBottomSheet(
     val createBarbellSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     
-    // convert barbell configurations to generic weight equipment configurations
-    val weightEquipmentConfigurations = barbellConfigurations.map { barbellConfig ->
+    // convert barbell configurations to unified equipment configurations
+    val unifiedConfigurations = barbellConfigurations.map { barbellConfig ->
         barbellConfig.equipment.withBarbellInfo(barbellConfig.barbellInfo)
     }
 
-    WeightEquipmentSelectionBottomSheet(
+    EquipmentSelectionBottomSheet(
         title = "Barbell Configurations",
-        configurations = weightEquipmentConfigurations,
+        configurations = unifiedConfigurations,
         modifier = modifier,
         onDismiss = onDismiss,
-        onSelectConfiguration = { weightConfig ->
+        onSelectConfiguration = { unifiedConfig ->
             // convert back to barbell configuration
             val originalBarbellConfig = barbellConfigurations.find { 
-                it.equipment.id == weightConfig.equipment.id 
+                it.equipment.id == unifiedConfig.equipment.id 
             }
             originalBarbellConfig?.let { onSelectBarbell(it) }
         },
@@ -75,8 +75,8 @@ fun BarbellSelectionBottomSheet(
                     createBarbellSheetState.hide()
                 }
             },
-            onBarbellCreated = {
-                onBarbellCreated()
+            onBarbellCreated = { barbellConfiguration ->
+                onBarbellCreated(barbellConfiguration)
                 showCreateBarbell = false
                 scope.launch {
                     createBarbellSheetState.hide()
