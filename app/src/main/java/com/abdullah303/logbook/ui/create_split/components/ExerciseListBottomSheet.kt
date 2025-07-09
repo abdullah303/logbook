@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,26 +23,31 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.abdullah303.logbook.data.local.entity.Exercise
+import com.abdullah303.logbook.data.model.Muscles
 import com.abdullah303.logbook.ui.components.GenericBottomSheet
+import com.abdullah303.logbook.ui.create_split.ExerciseWithEquipment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseListBottomSheet(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    selectedMuscles: Set<Muscles>,
+    onMuscleSelectionChange: (Set<Muscles>) -> Unit,
+    exercises: List<ExerciseWithEquipment>,
+    onExerciseClick: (ExerciseWithEquipment) -> Unit,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit = {},
-    onAddExercise: () -> Unit = {},
     onNavigateToCreateExercise: () -> Unit = {},
     sheetState: SheetState,
     maxHeightFraction: Float = 0.75f
 ) {
-    var searchQuery by remember { mutableStateOf("") }
 
     GenericBottomSheet(
         title = "Exercise List",
@@ -56,7 +63,7 @@ fun ExerciseListBottomSheet(
         ) {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = onSearchQueryChange,
                 modifier = Modifier.weight(1f),
                 placeholder = {
                     Text("Search exercises...")
@@ -94,19 +101,44 @@ fun ExerciseListBottomSheet(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // placeholder for exercises list
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No exercises available yet",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        // muscle filter chips
+        MuscleChipGroup(
+            selectedMuscles = selectedMuscles,
+            onMuscleSelectionChanged = onMuscleSelectionChange,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // exercises list
+        if (exercises.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (searchQuery.isBlank() && selectedMuscles.isEmpty()) {
+                        "No exercises available yet"
+                    } else {
+                        "No exercises match your filters"
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            LazyColumn {
+                items(exercises) { exerciseWithEquipment ->
+                    ExerciseDisplayCard(
+                        exerciseWithEquipment = exerciseWithEquipment,
+                        onExerciseClick = onExerciseClick
+                    )
+                }
+            }
         }
     }
 } 

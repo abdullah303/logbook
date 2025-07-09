@@ -52,6 +52,11 @@ fun CreateSplitScreen(
     val splitTitle by viewModel.splitTitle.collectAsState()
     val days by viewModel.days.collectAsState()
     val selectedDayIndex by viewModel.selectedDayIndex.collectAsState()
+    
+    // exercise-related state
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedMuscles by viewModel.selectedMuscles.collectAsState()
+    val filteredExercises by viewModel.filteredExercises.collectAsState()
 
     var showMenu by remember { mutableStateOf(false) }
     var menuAnchorOffset by remember { mutableStateOf(Offset.Zero) }
@@ -156,14 +161,19 @@ fun CreateSplitScreen(
                 }
             }
             ExerciseListBottomSheet(
-                onDismiss = {
+                searchQuery = searchQuery,
+                onSearchQueryChange = viewModel::updateSearchQuery,
+                selectedMuscles = selectedMuscles,
+                onMuscleSelectionChange = viewModel::updateSelectedMuscles,
+                exercises = filteredExercises,
+                onExerciseClick = { exerciseWithEquipment ->
+                    viewModel.selectExercise(exerciseWithEquipment)
                     showExerciseList = false
                     scope.launch {
                         bottomSheetState.hide()
                     }
                 },
-                onAddExercise = {
-                    // handle adding exercise
+                onDismiss = {
                     showExerciseList = false
                     scope.launch {
                         bottomSheetState.hide()
