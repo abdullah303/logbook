@@ -26,6 +26,14 @@ import com.abdullah303.logbook.ui.create_exercise.components.ExerciseNameCard
 import com.abdullah303.logbook.ui.create_exercise.components.MuscleSelectionCard
 import com.abdullah303.logbook.ui.create_exercise.components.MuscleSelectionBottomSheet
 import com.abdullah303.logbook.ui.create_exercise.components.SetupInfoCard
+import com.abdullah303.logbook.ui.create_exercise.components.BarbellDisplayCard
+import com.abdullah303.logbook.ui.create_exercise.components.BarbellSelectionBottomSheet
+import com.abdullah303.logbook.ui.create_exercise.components.CableStackDisplayCard
+import com.abdullah303.logbook.ui.create_exercise.components.CableStackSelectionBottomSheet
+import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineDisplayCard
+import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineSelectionBottomSheet
+import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineDisplayCard
+import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineSelectionBottomSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -52,14 +60,30 @@ fun CreateExerciseScreen(
     val auxiliaryMuscles by viewModel.auxiliaryMuscles.collectAsState()
     val bodyweightContribution by viewModel.bodyweightContribution.collectAsState()
     val setupInfo by viewModel.setupInfo.collectAsState()
+    val smithMachineConfigurations by viewModel.smithMachineConfigurations.collectAsState()
+    val selectedSmithMachine by viewModel.selectedSmithMachine.collectAsState()
+    val barbellConfigurations by viewModel.barbellConfigurations.collectAsState()
+    val selectedBarbell by viewModel.selectedBarbell.collectAsState()
+    val cableStackConfigurations by viewModel.cableStackConfigurations.collectAsState()
+    val selectedCableStack by viewModel.selectedCableStack.collectAsState()
+    val resistanceMachineConfigurations by viewModel.resistanceMachineConfigurations.collectAsState()
+    val selectedResistanceMachine by viewModel.selectedResistanceMachine.collectAsState()
     
     // bottom sheet state
     var showEquipmentSelection by remember { mutableStateOf(false) }
     var showPrimaryMuscleSelection by remember { mutableStateOf(false) }
     var showAuxiliaryMuscleSelection by remember { mutableStateOf(false) }
+    var showSmithMachineSelection by remember { mutableStateOf(false) }
+    var showBarbellSelection by remember { mutableStateOf(false) }
+    var showCableStackSelection by remember { mutableStateOf(false) }
+    var showResistanceMachineSelection by remember { mutableStateOf(false) }
     val equipmentSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val primaryMuscleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val auxiliaryMuscleSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val smithMachineSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val barbellSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val cableStackSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val resistanceMachineSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
     Column(
@@ -111,6 +135,66 @@ fun CreateExerciseScreen(
                     },
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
+                
+                // smith machine display card (only shown when smith machine is selected)
+                if (selectedSmithMachine != null) {
+                    SmithMachineDisplayCard(
+                        title = "Selected Smith Machine",
+                        selectedSmithMachine = selectedSmithMachine,
+                        onCardClick = {
+                            showSmithMachineSelection = true
+                        },
+                        onClearSelection = {
+                            viewModel.clearSelectedSmithMachine()
+                        },
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+                
+                // barbell display card (only shown when barbell is selected)
+                if (selectedBarbell != null) {
+                    BarbellDisplayCard(
+                        title = "Selected Barbell",
+                        selectedBarbell = selectedBarbell,
+                        onCardClick = {
+                            showBarbellSelection = true
+                        },
+                        onClearSelection = {
+                            viewModel.clearSelectedBarbell()
+                        },
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+                
+                // cable stack display card (only shown when cable stack is selected)
+                if (selectedCableStack != null) {
+                    CableStackDisplayCard(
+                        title = "Selected Cable Stack",
+                        selectedCableStack = selectedCableStack,
+                        onCardClick = {
+                            showCableStackSelection = true
+                        },
+                        onClearSelection = {
+                            viewModel.clearSelectedCableStack()
+                        },
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+                
+                // resistance machine display card (only shown when resistance machine is selected)
+                if (selectedResistanceMachine != null) {
+                    ResistanceMachineDisplayCard(
+                        title = "Selected Resistance Machine",
+                        selectedResistanceMachine = selectedResistanceMachine,
+                        onCardClick = {
+                            showResistanceMachineSelection = true
+                        },
+                        onClearSelection = {
+                            viewModel.clearSelectedResistanceMachine()
+                        },
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
                 
                 // primary muscles selection card
                 MuscleSelectionCard(
@@ -172,6 +256,34 @@ fun CreateExerciseScreen(
                         equipmentSheetState.hide()
                     }
                 },
+                onNavigateToSmithMachine = {
+                    showEquipmentSelection = false
+                    scope.launch {
+                        equipmentSheetState.hide()
+                    }
+                    showSmithMachineSelection = true
+                },
+                onNavigateToBarbell = {
+                    showEquipmentSelection = false
+                    scope.launch {
+                        equipmentSheetState.hide()
+                    }
+                    showBarbellSelection = true
+                },
+                onNavigateToCableStack = {
+                    showEquipmentSelection = false
+                    scope.launch {
+                        equipmentSheetState.hide()
+                    }
+                    showCableStackSelection = true
+                },
+                onNavigateToResistanceMachine = {
+                    showEquipmentSelection = false
+                    scope.launch {
+                        equipmentSheetState.hide()
+                    }
+                    showResistanceMachineSelection = true
+                },
                 sheetState = equipmentSheetState
             )
         }
@@ -227,6 +339,138 @@ fun CreateExerciseScreen(
                     }
                 },
                 sheetState = auxiliaryMuscleSheetState
+            )
+        }
+        
+        // smith machine selection bottom sheet
+        if (showSmithMachineSelection) {
+            LaunchedEffect(showSmithMachineSelection) {
+                if (showSmithMachineSelection) {
+                    smithMachineSheetState.show()
+                }
+            }
+            SmithMachineSelectionBottomSheet(
+                smithMachineConfigurations = smithMachineConfigurations,
+                onDismiss = {
+                    showSmithMachineSelection = false
+                    scope.launch {
+                        smithMachineSheetState.hide()
+                    }
+                },
+                onSelectSmithMachine = { selectedConfiguration ->
+                    viewModel.selectSmithMachine(selectedConfiguration)
+                    showSmithMachineSelection = false
+                    scope.launch {
+                        smithMachineSheetState.hide()
+                    }
+                },
+                onNavigateToCreateSmithMachine = {
+                    navigationState.onNavigateToCreateSmithMachine()
+                    showSmithMachineSelection = false
+                    scope.launch {
+                        smithMachineSheetState.hide()
+                    }
+                },
+                sheetState = smithMachineSheetState
+            )
+        }
+        
+        // barbell selection bottom sheet
+        if (showBarbellSelection) {
+            LaunchedEffect(showBarbellSelection) {
+                if (showBarbellSelection) {
+                    barbellSheetState.show()
+                }
+            }
+            BarbellSelectionBottomSheet(
+                barbellConfigurations = barbellConfigurations,
+                onDismiss = {
+                    showBarbellSelection = false
+                    scope.launch {
+                        barbellSheetState.hide()
+                    }
+                },
+                onSelectBarbell = { selectedConfiguration ->
+                    viewModel.selectBarbell(selectedConfiguration)
+                    showBarbellSelection = false
+                    scope.launch {
+                        barbellSheetState.hide()
+                    }
+                },
+                onNavigateToCreateBarbell = {
+                    navigationState.onNavigateToCreateBarbell()
+                    showBarbellSelection = false
+                    scope.launch {
+                        barbellSheetState.hide()
+                    }
+                },
+                sheetState = barbellSheetState
+            )
+        }
+        
+        // cable stack selection bottom sheet
+        if (showCableStackSelection) {
+            LaunchedEffect(showCableStackSelection) {
+                if (showCableStackSelection) {
+                    cableStackSheetState.show()
+                }
+            }
+            CableStackSelectionBottomSheet(
+                cableStackConfigurations = cableStackConfigurations,
+                onDismiss = {
+                    showCableStackSelection = false
+                    scope.launch {
+                        cableStackSheetState.hide()
+                    }
+                },
+                onSelectCableStack = { selectedConfiguration ->
+                    viewModel.selectCableStack(selectedConfiguration)
+                    showCableStackSelection = false
+                    scope.launch {
+                        cableStackSheetState.hide()
+                    }
+                },
+                onNavigateToCreateCableStack = {
+                    navigationState.onNavigateToCreateCableStack()
+                    showCableStackSelection = false
+                    scope.launch {
+                        cableStackSheetState.hide()
+                    }
+                },
+                sheetState = cableStackSheetState
+            )
+        }
+        
+        // resistance machine selection bottom sheet
+        if (showResistanceMachineSelection) {
+            LaunchedEffect(showResistanceMachineSelection) {
+                if (showResistanceMachineSelection) {
+                    resistanceMachineSheetState.show()
+                }
+            }
+            ResistanceMachineSelectionBottomSheet(
+                resistanceMachineConfigurations = resistanceMachineConfigurations,
+                onDismiss = {
+                    showResistanceMachineSelection = false
+                    scope.launch {
+                        resistanceMachineSheetState.hide()
+                    }
+                },
+                onSelectResistanceMachine = { selectedConfiguration ->
+                    viewModel.selectResistanceMachine(selectedConfiguration)
+                    showResistanceMachineSelection = false
+                    scope.launch {
+                        resistanceMachineSheetState.hide()
+                    }
+                },
+                onNavigateToCreateResistanceMachine = {
+                    navigationState.onNavigateToCreateResistanceMachine()
+                    showResistanceMachineSelection = false
+                    scope.launch {
+                        resistanceMachineSheetState.hide()
+                    }
+                },
+                sheetState = resistanceMachineSheetState
             )
         }
     }

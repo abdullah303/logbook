@@ -4,11 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,9 +34,9 @@ fun EquipmentSelectionCard(
                 .fillMaxWidth()
                 .clickable { onCardClick() },
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceDim
+                containerColor = MaterialTheme.colorScheme.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             if (selectedEquipment.isEmpty()) {
                 Text(
@@ -51,25 +49,13 @@ fun EquipmentSelectionCard(
                         .padding(16.dp)
                 )
             } else {
-                Column(
+                Text(
+                    text = selectedEquipment.first().name.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
-                ) {
-                    selectedEquipment.forEach { equipment ->
-                        SuggestionChip(
-                            onClick = { },
-                            label = {
-                                Text(
-                                    text = equipment.name.lowercase().replace('_', ' '),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            },
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
-                }
+                )
             }
         }
     }

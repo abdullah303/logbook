@@ -3,6 +3,10 @@ package com.abdullah303.logbook.ui.create_exercise
 import androidx.lifecycle.ViewModel
 import com.abdullah303.logbook.data.model.EquipmentType
 import com.abdullah303.logbook.data.model.Muscles
+import com.abdullah303.logbook.ui.create_exercise.components.BarbellConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.CableStackConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineConfiguration
+import com.abdullah303.logbook.ui.create_exercise.components.SmithMachineConfiguration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +36,30 @@ class CreateExerciseViewModel @Inject constructor() : ViewModel() {
 
     private val _setupInfo = MutableStateFlow("")
     val setupInfo: StateFlow<String> = _setupInfo.asStateFlow()
+
+    private val _smithMachineConfigurations = MutableStateFlow<List<SmithMachineConfiguration>>(emptyList())
+    val smithMachineConfigurations: StateFlow<List<SmithMachineConfiguration>> = _smithMachineConfigurations.asStateFlow()
+
+    private val _selectedSmithMachine = MutableStateFlow<SmithMachineConfiguration?>(null)
+    val selectedSmithMachine: StateFlow<SmithMachineConfiguration?> = _selectedSmithMachine.asStateFlow()
+
+    private val _barbellConfigurations = MutableStateFlow<List<BarbellConfiguration>>(emptyList())
+    val barbellConfigurations: StateFlow<List<BarbellConfiguration>> = _barbellConfigurations.asStateFlow()
+
+    private val _selectedBarbell = MutableStateFlow<BarbellConfiguration?>(null)
+    val selectedBarbell: StateFlow<BarbellConfiguration?> = _selectedBarbell.asStateFlow()
+
+    private val _cableStackConfigurations = MutableStateFlow<List<CableStackConfiguration>>(emptyList())
+    val cableStackConfigurations: StateFlow<List<CableStackConfiguration>> = _cableStackConfigurations.asStateFlow()
+
+    private val _selectedCableStack = MutableStateFlow<CableStackConfiguration?>(null)
+    val selectedCableStack: StateFlow<CableStackConfiguration?> = _selectedCableStack.asStateFlow()
+
+    private val _resistanceMachineConfigurations = MutableStateFlow<List<ResistanceMachineConfiguration>>(emptyList())
+    val resistanceMachineConfigurations: StateFlow<List<ResistanceMachineConfiguration>> = _resistanceMachineConfigurations.asStateFlow()
+
+    private val _selectedResistanceMachine = MutableStateFlow<ResistanceMachineConfiguration?>(null)
+    val selectedResistanceMachine: StateFlow<ResistanceMachineConfiguration?> = _selectedResistanceMachine.asStateFlow()
     
     /**
      * updates the exercise name
@@ -73,6 +101,90 @@ class CreateExerciseViewModel @Inject constructor() : ViewModel() {
      */
     fun updateSetupInfo(info: String) {
         _setupInfo.value = info
+    }
+
+    /**
+     * updates the smith machine configurations
+     */
+    fun updateSmithMachineConfigurations(configurations: List<SmithMachineConfiguration>) {
+        _smithMachineConfigurations.value = configurations
+    }
+
+    /**
+     * selects a smith machine configuration
+     */
+    fun selectSmithMachine(configuration: SmithMachineConfiguration) {
+        _selectedSmithMachine.value = configuration
+    }
+
+    /**
+     * clears the selected smith machine
+     */
+    fun clearSelectedSmithMachine() {
+        _selectedSmithMachine.value = null
+    }
+
+    /**
+     * updates the barbell configurations
+     */
+    fun updateBarbellConfigurations(configurations: List<BarbellConfiguration>) {
+        _barbellConfigurations.value = configurations
+    }
+
+    /**
+     * selects a barbell configuration
+     */
+    fun selectBarbell(configuration: BarbellConfiguration) {
+        _selectedBarbell.value = configuration
+    }
+
+    /**
+     * clears the selected barbell
+     */
+    fun clearSelectedBarbell() {
+        _selectedBarbell.value = null
+    }
+
+    /**
+     * updates the cable stack configurations
+     */
+    fun updateCableStackConfigurations(configurations: List<CableStackConfiguration>) {
+        _cableStackConfigurations.value = configurations
+    }
+
+    /**
+     * selects a cable stack configuration
+     */
+    fun selectCableStack(configuration: CableStackConfiguration) {
+        _selectedCableStack.value = configuration
+    }
+
+    /**
+     * clears the selected cable stack
+     */
+    fun clearSelectedCableStack() {
+        _selectedCableStack.value = null
+    }
+
+    /**
+     * updates the resistance machine configurations
+     */
+    fun updateResistanceMachineConfigurations(configurations: List<ResistanceMachineConfiguration>) {
+        _resistanceMachineConfigurations.value = configurations
+    }
+
+    /**
+     * selects a resistance machine configuration
+     */
+    fun selectResistanceMachine(configuration: ResistanceMachineConfiguration) {
+        _selectedResistanceMachine.value = configuration
+    }
+
+    /**
+     * clears the selected resistance machine
+     */
+    fun clearSelectedResistanceMachine() {
+        _selectedResistanceMachine.value = null
     }
     
     /**
