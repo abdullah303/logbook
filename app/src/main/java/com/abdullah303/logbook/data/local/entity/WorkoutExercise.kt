@@ -44,5 +44,6 @@ data class WorkoutExercise(
     val reps_max: Int,
     val rir: Int,
     val dropset: Boolean,
+    val unilateral: Boolean,
     val superset_group_id: String?
 )
