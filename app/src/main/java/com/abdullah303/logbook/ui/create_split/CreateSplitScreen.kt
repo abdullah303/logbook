@@ -52,6 +52,7 @@ fun CreateSplitScreen(
     val splitTitle by viewModel.splitTitle.collectAsState()
     val days by viewModel.days.collectAsState()
     val selectedDayIndex by viewModel.selectedDayIndex.collectAsState()
+    val dayExercises by viewModel.dayExercises.collectAsState()
     
     // exercise-related state
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -117,7 +118,12 @@ fun CreateSplitScreen(
             // day container that takes the rest of the screen
             if (days.isNotEmpty() && selectedDayIndex < days.size) {
                 DayContainer(
-                    dayName = days[selectedDayIndex]
+                    dayName = days[selectedDayIndex],
+                    workoutExercises = dayExercises[selectedDayIndex] ?: emptyList(),
+                    onUpdateExercise = viewModel::updateWorkoutExercise,
+                    onReorderExercises = { fromIndex, toIndex ->
+                        viewModel.reorderWorkoutExercises(selectedDayIndex, fromIndex, toIndex)
+                    }
                 )
             }
         }

@@ -26,6 +26,18 @@ data class ExerciseWithEquipment(
 )
 
 /**
+ * data class to represent a workout exercise with its parameters
+ */
+data class WorkoutExercise(
+    val id: String, // unique identifier for this workout exercise
+    val exercise: Exercise,
+    val equipmentName: String,
+    val sets: Int = 3,
+    val reps: Int = 10,
+    val rir: Float = 2.0f // rating of perceived exertion in reserve
+)
+
+/**
  * viewmodel for managing create split screen state and business logic
  */
 @HiltViewModel
@@ -42,6 +54,10 @@ class CreateSplitViewModel @Inject constructor(
 
     private val _selectedDayIndex = MutableStateFlow(0)
     val selectedDayIndex: StateFlow<Int> = _selectedDayIndex.asStateFlow()
+    
+    // exercises per day - map of day index to list of workout exercises
+    private val _dayExercises = MutableStateFlow<Map<Int, List<WorkoutExercise>>>(emptyMap())
+    val dayExercises: StateFlow<Map<Int, List<WorkoutExercise>>> = _dayExercises.asStateFlow()
     
     // exercise-related state
     private val _allExercises = MutableStateFlow<List<ExerciseWithEquipment>>(emptyList())
@@ -108,6 +124,22 @@ class CreateSplitViewModel @Inject constructor(
         if (index >= 0 && index < currentDays.size) {
             currentDays.removeAt(index)
             _days.value = currentDays
+            
+            // remove exercises for this day and shift indexes
+            val currentExercises = _dayExercises.value.toMutableMap()
+            currentExercises.remove(index)
+            
+            // shift remaining day indexes
+            val updatedExercises = mutableMapOf<Int, List<WorkoutExercise>>()
+            currentExercises.forEach { (dayIndex, exercises) ->
+                if (dayIndex > index) {
+                    updatedExercises[dayIndex - 1] = exercises
+                } else {
+                    updatedExercises[dayIndex] = exercises
+                }
+            }
+            _dayExercises.value = updatedExercises
+            
             if (_selectedDayIndex.value >= currentDays.size) {
                 _selectedDayIndex.value = currentDays.size - 1
             }
@@ -173,11 +205,88 @@ class CreateSplitViewModel @Inject constructor(
     }
     
     /**
-     * handles exercise selection (placeholder for future implementation)
+     * handles exercise selection - adds the exercise to the current day
      */
     fun selectExercise(exerciseWithEquipment: ExerciseWithEquipment) {
-        // todo: implement exercise selection logic
-        // this will likely involve adding the exercise to the current day
+        val currentDayIndex = _selectedDayIndex.value
+        val currentExercises = _dayExercises.value.toMutableMap()
+        val exercisesForDay = currentExercises[currentDayIndex]?.toMutableList() ?: mutableListOf()
+        
+        // create a new workout exercise with unique id
+        val workoutExercise = WorkoutExercise(
+            id = "${exerciseWithEquipment.exercise.id}_${System.currentTimeMillis()}",
+            exercise = exerciseWithEquipment.exercise,
+            equipmentName = exerciseWithEquipment.equipmentName
+        )
+        
+        exercisesForDay.add(workoutExercise)
+        currentExercises[currentDayIndex] = exercisesForDay
+        _dayExercises.value = currentExercises
+    }
+    
+    /**
+     * updates parameters for a workout exercise
+     */
+    fun updateWorkoutExercise(exerciseId: String, sets: Int? = null, reps: Int? = null, rir: Float? = null) {
+        val currentExercises = _dayExercises.value.toMutableMap()
+        
+        // find the exercise across all days
+        currentExercises.forEach { (dayIndex, exercises) ->
+            val exerciseIndex = exercises.indexOfFirst { it.id == exerciseId }
+            if (exerciseIndex != -1) {
+                val updatedExercises = exercises.toMutableList()
+                val currentExercise = updatedExercises[exerciseIndex]
+                
+                updatedExercises[exerciseIndex] = currentExercise.copy(
+                    sets = sets ?: currentExercise.sets,
+                    reps = reps ?: currentExercise.reps,
+                    rir = rir ?: currentExercise.rir
+                )
+                
+                currentExercises[dayIndex] = updatedExercises
+                _dayExercises.value = currentExercises
+                return
+            }
+        }
+    }
+    
+    /**
+     * removes a workout exercise from a day
+     */
+    fun removeWorkoutExercise(exerciseId: String) {
+        val currentExercises = _dayExercises.value.toMutableMap()
+        
+        // find and remove the exercise across all days
+        currentExercises.forEach { (dayIndex, exercises) ->
+            val exerciseIndex = exercises.indexOfFirst { it.id == exerciseId }
+            if (exerciseIndex != -1) {
+                val updatedExercises = exercises.toMutableList()
+                updatedExercises.removeAt(exerciseIndex)
+                currentExercises[dayIndex] = updatedExercises
+                _dayExercises.value = currentExercises
+                return
+            }
+        }
+    }
+    
+    /**
+     * reorders workout exercises within a specific day
+     */
+    fun reorderWorkoutExercises(dayIndex: Int, fromIndex: Int, toIndex: Int) {
+        val currentExercises = _dayExercises.value.toMutableMap()
+        val exercisesForDay = currentExercises[dayIndex]?.toMutableList() ?: return
+        
+        if (fromIndex >= 0 && fromIndex < exercisesForDay.size && 
+            toIndex >= 0 && toIndex < exercisesForDay.size && 
+            fromIndex != toIndex) {
+            
+            // perform the reorder operation
+            val item = exercisesForDay.removeAt(fromIndex)
+            exercisesForDay.add(toIndex, item)
+            
+            currentExercises[dayIndex] = exercisesForDay
+            _dayExercises.value = currentExercises
+        }
     }
     
     /**
