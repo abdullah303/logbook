@@ -30,7 +30,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 fun DayContainer(
     dayName: String,
     workoutExercises: List<WorkoutExercise>,
-    onUpdateExercise: (String, Int?, Int?, Float?) -> Unit,
+    onUpdateExercise: (String, Int?, Pair<Int, Int>?, Float?) -> Unit,
     onReorderExercises: (Int, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {

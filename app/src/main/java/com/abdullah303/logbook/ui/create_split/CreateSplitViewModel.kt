@@ -33,7 +33,8 @@ data class WorkoutExercise(
     val exercise: Exercise,
     val equipmentName: String,
     val sets: Int = 3,
-    val reps: Int = 10,
+    val repMin: Int = 8,
+    val repMax: Int = 12,
     val rir: Float = 2.0f // rating of perceived exertion in reserve
 )
 
@@ -227,7 +228,7 @@ class CreateSplitViewModel @Inject constructor(
     /**
      * updates parameters for a workout exercise
      */
-    fun updateWorkoutExercise(exerciseId: String, sets: Int? = null, reps: Int? = null, rir: Float? = null) {
+    fun updateWorkoutExercise(exerciseId: String, sets: Int? = null, repRange: Pair<Int, Int>? = null, rir: Float? = null) {
         val currentExercises = _dayExercises.value.toMutableMap()
         
         // find the exercise across all days
@@ -239,7 +240,8 @@ class CreateSplitViewModel @Inject constructor(
                 
                 updatedExercises[exerciseIndex] = currentExercise.copy(
                     sets = sets ?: currentExercise.sets,
-                    reps = reps ?: currentExercise.reps,
+                    repMin = repRange?.first ?: currentExercise.repMin,
+                    repMax = repRange?.second ?: currentExercise.repMax,
                     rir = rir ?: currentExercise.rir
                 )
                 

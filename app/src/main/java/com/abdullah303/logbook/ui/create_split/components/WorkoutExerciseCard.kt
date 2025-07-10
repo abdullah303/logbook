@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WorkoutExerciseCard(
     workoutExercise: WorkoutExercise,
-    onUpdateExercise: (String, Int?, Int?, Float?) -> Unit,
+    onUpdateExercise: (String, Int?, Pair<Int, Int>?, Float?) -> Unit,
     modifier: Modifier = Modifier,
     dragHandleModifier: Modifier = Modifier
 ) {
@@ -156,10 +156,10 @@ fun WorkoutExerciseCard(
                     modifier = Modifier.weight(1f)
                 )
                 
-                // reps selection - compact version
+                // reps selection - compact version with range display
                 CompactFormSelectionCard(
                     title = "Reps",
-                    value = "${workoutExercise.reps}",
+                    value = "${workoutExercise.repMin}-${workoutExercise.repMax}",
                     onSelectionClick = { showRepsSelection = true },
                     modifier = Modifier.weight(1f)
                 )
@@ -198,20 +198,27 @@ fun WorkoutExerciseCard(
         )
     }
     
-    // reps selection bottom sheet
+    // reps selection bottom sheet - now using RangeSelection
     if (showRepsSelection) {
         ValueSelectionBottomSheet(
-            title = "Number of Reps",
-            selectionType = ValueSelectionType.SingleInteger(
+            title = "Rep Range",
+            selectionType = ValueSelectionType.RangeSelection(
                 values = (1..50).toList(),
-                initialValue = workoutExercise.reps
+                initialRange = Pair(workoutExercise.repMin, workoutExercise.repMax),
+                rangeFormatter = { min, max -> "$min-$max" }
             ),
             sheetState = repsBottomSheetState,
             onDismiss = {
                 showRepsSelection = false
             },
-            onConfirm = { value ->
-                onUpdateExercise(workoutExercise.id, null, value, null)
+            onConfirm = { rangeString ->
+                // parse the range string (e.g., "8-12") back to a pair
+                val parts = rangeString.split("-")
+                if (parts.size == 2) {
+                    val min = parts[0].toIntOrNull() ?: workoutExercise.repMin
+                    val max = parts[1].toIntOrNull() ?: workoutExercise.repMax
+                    onUpdateExercise(workoutExercise.id, null, Pair(min, max), null)
+                }
                 showRepsSelection = false
             }
         )
