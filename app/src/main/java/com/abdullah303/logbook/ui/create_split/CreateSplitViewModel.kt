@@ -4,10 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abdullah303.logbook.data.local.entity.Exercise
 import com.abdullah303.logbook.data.local.entity.Equipment
+import com.abdullah303.logbook.data.local.entity.Splits
+import com.abdullah303.logbook.data.local.entity.Workout
+import com.abdullah303.logbook.data.local.entity.WorkoutExercise
+import com.abdullah303.logbook.data.local.entity.SupersetGroup
 import com.abdullah303.logbook.data.model.Muscles
 import com.abdullah303.logbook.data.model.Side
 import com.abdullah303.logbook.data.repository.ExerciseRepository
 import com.abdullah303.logbook.data.repository.EquipmentRepository
+import com.abdullah303.logbook.data.repository.SplitsRepository
+import com.abdullah303.logbook.data.repository.WorkoutRepository
+import com.abdullah303.logbook.data.repository.WorkoutExerciseRepository
+import com.abdullah303.logbook.data.repository.SupersetGroupRepository
+import com.abdullah303.logbook.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +27,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 /**
  * data class to hold exercise with equipment information
@@ -28,9 +39,9 @@ data class ExerciseWithEquipment(
 )
 
 /**
- * data class to represent a workout exercise with its parameters
+ * data class to represent a workout exercise with its parameters for the create split UI
  */
-data class WorkoutExercise(
+data class CreateSplitWorkoutExercise(
     val id: String, // unique identifier for this workout exercise
     val exercise: Exercise,
     val equipmentName: String,
@@ -49,7 +60,12 @@ data class WorkoutExercise(
 @HiltViewModel
 class CreateSplitViewModel @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
-    private val equipmentRepository: EquipmentRepository
+    private val equipmentRepository: EquipmentRepository,
+    private val splitsRepository: SplitsRepository,
+    private val workoutRepository: WorkoutRepository,
+    private val workoutExerciseRepository: WorkoutExerciseRepository,
+    private val supersetGroupRepository: SupersetGroupRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
     
     private val _splitTitle = MutableStateFlow("New Split")
@@ -62,8 +78,8 @@ class CreateSplitViewModel @Inject constructor(
     val selectedDayIndex: StateFlow<Int> = _selectedDayIndex.asStateFlow()
     
     // exercises per day - map of day index to list of workout exercises
-    private val _dayExercises = MutableStateFlow<Map<Int, List<WorkoutExercise>>>(emptyMap())
-    val dayExercises: StateFlow<Map<Int, List<WorkoutExercise>>> = _dayExercises.asStateFlow()
+    private val _dayExercises = MutableStateFlow<Map<Int, List<CreateSplitWorkoutExercise>>>(emptyMap())
+    val dayExercises: StateFlow<Map<Int, List<CreateSplitWorkoutExercise>>> = _dayExercises.asStateFlow()
     
     // exercise-related state
     private val _allExercises = MutableStateFlow<List<ExerciseWithEquipment>>(emptyList())
@@ -72,6 +88,10 @@ class CreateSplitViewModel @Inject constructor(
     
     private val _selectedMuscles = MutableStateFlow<Set<Muscles>>(emptySet())
     val selectedMuscles: StateFlow<Set<Muscles>> = _selectedMuscles.asStateFlow()
+    
+    // save state
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
     
     // filtered exercises based on search query and selected muscles
     val filteredExercises: StateFlow<List<ExerciseWithEquipment>> = combine(
@@ -136,7 +156,7 @@ class CreateSplitViewModel @Inject constructor(
             currentExercises.remove(index)
             
             // shift remaining day indexes
-            val updatedExercises = mutableMapOf<Int, List<WorkoutExercise>>()
+            val updatedExercises = mutableMapOf<Int, List<CreateSplitWorkoutExercise>>()
             currentExercises.forEach { (dayIndex, exercises) ->
                 if (dayIndex > index) {
                     updatedExercises[dayIndex - 1] = exercises
@@ -153,11 +173,111 @@ class CreateSplitViewModel @Inject constructor(
     }
     
     /**
-     * saves the split (placeholder for future implementation)
+     * saves the split to the database
      */
-    fun saveSplit() {
-        // todo: implement save logic
-        // this will likely involve calling a repository to save the split
+    fun saveSplit(onSaveComplete: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            _isSaving.value = true
+            try {
+                // get the first user (assuming single user app for now)
+                val users = userRepository.getAllUsers()
+                val currentUser = users.firstOrNull() ?: run {
+                    // create a default user if none exists
+                    val defaultUser = com.abdullah303.logbook.data.local.entity.User(
+                        id = "default_user_${System.currentTimeMillis()}",
+                        username = "Default User",
+                        weight = BigDecimal("70.0"), // default weight in kg
+                        height = BigDecimal("175.0"), // default height in cm
+                        createdAt = LocalDateTime.now()
+                    )
+                    userRepository.insertUser(defaultUser)
+                    defaultUser
+                }
+                
+                // create the split
+                val splitId = "split_${System.currentTimeMillis()}"
+                val split = Splits(
+                    id = splitId,
+                    user_id = currentUser.id,
+                    name = _splitTitle.value
+                )
+                
+                // save the split
+                splitsRepository.insertSplits(split)
+                
+                // save workouts for each day
+                val workouts = mutableListOf<Workout>()
+                val allWorkoutExercises = mutableListOf<com.abdullah303.logbook.data.local.entity.WorkoutExercise>()
+                val allSupersetGroups = mutableListOf<SupersetGroup>()
+                
+                _days.value.forEachIndexed { dayIndex, dayName ->
+                    val workoutId = "workout_${splitId}_${dayIndex}"
+                    val workout = Workout(
+                        id = workoutId,
+                        split_id = splitId,
+                        name = dayName,
+                        position = dayIndex
+                    )
+                    workouts.add(workout)
+                    
+                    // get exercises for this day
+                    val exercises = _dayExercises.value[dayIndex] ?: emptyList()
+                    
+                    // collect unique superset groups for this workout
+                    val supersetGroups = exercises
+                        .mapNotNull { createSplitWorkoutExercise -> createSplitWorkoutExercise.supersetGroupId }
+                        .distinct()
+                        .map { supersetGroupId ->
+                            SupersetGroup(
+                                id = supersetGroupId,
+                                workout_id = workoutId
+                            )
+                        }
+                    allSupersetGroups.addAll(supersetGroups)
+                    
+                    // create workout exercises
+                    exercises.forEachIndexed { exerciseIndex, createSplitWorkoutExercise ->
+                        val workoutExerciseEntity = com.abdullah303.logbook.data.local.entity.WorkoutExercise(
+                            id = "we_${workoutId}_${exerciseIndex}",
+                            workout_id = workoutId,
+                            exercise_id = createSplitWorkoutExercise.exercise.id,
+                            position = exerciseIndex,
+                            sets = createSplitWorkoutExercise.sets,
+                            reps_min = createSplitWorkoutExercise.repMin,
+                            reps_max = createSplitWorkoutExercise.repMax,
+                            rir = createSplitWorkoutExercise.rir.toInt(),
+                            dropset = false, // not implemented yet
+                            unilateral = createSplitWorkoutExercise.isUnilateral,
+                            superset_group_id = createSplitWorkoutExercise.supersetGroupId
+                        )
+                        allWorkoutExercises.add(workoutExerciseEntity)
+                    }
+                }
+                
+                // save all workouts
+                workoutRepository.insertAllWorkouts(workouts)
+                
+                // save all superset groups
+                if (allSupersetGroups.isNotEmpty()) {
+                    supersetGroupRepository.insertAllSupersetGroups(allSupersetGroups)
+                }
+                
+                // save all workout exercises
+                if (allWorkoutExercises.isNotEmpty()) {
+                    workoutExerciseRepository.insertAllWorkoutExercises(allWorkoutExercises)
+                }
+                
+                onSaveComplete(true)
+                
+            } catch (e: Exception) {
+                // log the error for debugging
+                println("Error saving split: ${e.message}")
+                e.printStackTrace()
+                onSaveComplete(false)
+            } finally {
+                _isSaving.value = false
+            }
+        }
     }
     
     // exercise-related functions
@@ -219,13 +339,13 @@ class CreateSplitViewModel @Inject constructor(
         val exercisesForDay = currentExercises[currentDayIndex]?.toMutableList() ?: mutableListOf()
         
         // create a new workout exercise with unique id
-        val workoutExercise = WorkoutExercise(
+        val createSplitWorkoutExercise = CreateSplitWorkoutExercise(
             id = "${exerciseWithEquipment.exercise.id}_${System.currentTimeMillis()}",
             exercise = exerciseWithEquipment.exercise,
             equipmentName = exerciseWithEquipment.equipmentName
         )
         
-        exercisesForDay.add(workoutExercise)
+        exercisesForDay.add(createSplitWorkoutExercise)
         currentExercises[currentDayIndex] = exercisesForDay
         _dayExercises.value = currentExercises
     }
@@ -506,7 +626,7 @@ class CreateSplitViewModel @Inject constructor(
     /**
      * gets all exercises in a superset group for a given day
      */
-    fun getExercisesInSuperset(dayIndex: Int, supersetGroupId: String): List<WorkoutExercise> {
+    fun getExercisesInSuperset(dayIndex: Int, supersetGroupId: String): List<CreateSplitWorkoutExercise> {
         val exercises = _dayExercises.value[dayIndex] ?: emptyList()
         return exercises.filter { it.supersetGroupId == supersetGroupId }
     }

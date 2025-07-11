@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.abdullah303.logbook.ui.components.ValueSelectionBottomSheet
 import com.abdullah303.logbook.ui.components.ValueSelectionType
 import com.abdullah303.logbook.data.model.Side
-import com.abdullah303.logbook.ui.create_split.WorkoutExercise
+import com.abdullah303.logbook.ui.create_split.CreateSplitWorkoutExercise
 import kotlinx.coroutines.launch
 import com.abdullah303.logbook.ui.create_split.components.SideOrderRow
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -49,7 +49,7 @@ import androidx.compose.material3.HorizontalDivider
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun WorkoutExerciseCard(
-    workoutExercise: WorkoutExercise,
+    workoutExercise: CreateSplitWorkoutExercise,
     onUpdateExercise: (String, Int?, Pair<Int, Int>?, Float?) -> Unit,
     onToggleUnilateral: (String) -> Unit,
     onUpdateSideOrder: (String, List<Side>) -> Unit,

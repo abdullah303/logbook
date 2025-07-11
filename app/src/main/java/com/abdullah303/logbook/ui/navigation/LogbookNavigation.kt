@@ -41,6 +41,13 @@ fun LogbookNavigation(
                 onNavigateToCreateExercise = {
                     navController.navigate(Routes.CreateExercise.route)
                 },
+                onSaveComplete = {
+                    navController.navigate(Routes.Home.route) {
+                        popUpTo(Routes.Home.route) {
+                            inclusive = false
+                        }
+                    }
+                },
                 navController = navController
             )
         }

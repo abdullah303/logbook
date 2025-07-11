@@ -226,7 +226,8 @@ fun CreateExerciseScreen(
                         selectedBarbell != null || 
                         selectedSmithMachine != null || 
                         selectedCableStack != null || 
-                        selectedResistanceMachine != null
+                        selectedResistanceMachine != null ||
+                        equipment.isNotEmpty()
                     )
                 ) {
                     if (isSaving) {

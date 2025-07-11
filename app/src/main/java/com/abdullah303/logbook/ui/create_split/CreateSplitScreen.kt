@@ -5,9 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Save
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -38,6 +47,7 @@ import com.abdullah303.logbook.ui.create_split.components.DayButtonGroup
 import com.abdullah303.logbook.ui.create_split.components.DayContainer
 import com.abdullah303.logbook.ui.components.InlineEditableText
 import com.abdullah303.logbook.data.local.entity.Exercise
+import com.abdullah303.logbook.ui.create_split.CreateSplitWorkoutExercise
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,18 +55,21 @@ fun CreateSplitScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit = {},
     onNavigateToCreateExercise: () -> Unit = {},
+    onSaveComplete: () -> Unit = {},
     viewModel: CreateSplitViewModel = hiltViewModel(),
     navController: NavController? = null
 ) {
     val navigationState = CreateSplitScreenNavigation(
         onNavigateBack = onNavigateBack,
-        onNavigateToCreateExercise = onNavigateToCreateExercise
+        onNavigateToCreateExercise = onNavigateToCreateExercise,
+        onSaveComplete = onSaveComplete
     )
 
     val splitTitle by viewModel.splitTitle.collectAsState()
     val days by viewModel.days.collectAsState()
     val selectedDayIndex by viewModel.selectedDayIndex.collectAsState()
     val dayExercises by viewModel.dayExercises.collectAsState()
+    val isSaving by viewModel.isSaving.collectAsState()
     
     // exercise-related state
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -71,6 +84,7 @@ fun CreateSplitScreen(
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val dayButtonPositions = remember { mutableStateMapOf<Int, Offset>() }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // observe navigation arguments for newly created exercise
     LaunchedEffect(navController) {
@@ -93,22 +107,68 @@ fun CreateSplitScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            InlineEditableText(
-                text = splitTitle,
+            // title and save button row
+            Row(
                 modifier = Modifier
-                    .padding(top = 24.dp, start = 24.dp, end = 24.dp)
-                    .alpha(0.9f),
-                onTextChange = { viewModel.updateSplitTitle(it) },
-                textStyle = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                singleLine = true,
-                onDone = {
-                    // keyboard will be dismissed automatically
+                    .padding(top = 24.dp, start = 24.dp, end = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                InlineEditableText(
+                    text = splitTitle,
+                    modifier = Modifier
+                        .weight(1f)
+                        .alpha(0.9f),
+                    onTextChange = { viewModel.updateSplitTitle(it) },
+                    textStyle = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    singleLine = true,
+                    onDone = {
+                        // keyboard will be dismissed automatically
+                    }
+                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                // save button
+                Button(
+                    onClick = {
+                        viewModel.saveSplit { success ->
+                            scope.launch {
+                                if (success) {
+                                    snackbarHostState.showSnackbar("Split saved successfully!")
+                                    navigationState.onSaveComplete()
+                                } else {
+                                    snackbarHostState.showSnackbar("Failed to save split")
+                                }
+                            }
+                        }
+                    },
+                    enabled = !isSaving && splitTitle.isNotBlank(),
+                    modifier = Modifier
+                ) {
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = "Save Split",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Save")
+                        }
+                    }
                 }
-            )
+            }
 
             DayButtonGroup(
                 days = days,
@@ -182,6 +242,12 @@ fun CreateSplitScreen(
                 modifier = Modifier.size(24.dp)
             )
         }
+
+        // snackbar host for showing save messages
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
 
         // animate bottom sheet open after it is composed
         if (showExerciseList) {

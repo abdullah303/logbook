@@ -32,22 +32,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import com.abdullah303.logbook.ui.create_split.WorkoutExercise
+import com.abdullah303.logbook.ui.create_split.CreateSplitWorkoutExercise
 import com.abdullah303.logbook.data.model.Side
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlinx.coroutines.delay
 
 // helper function to find the original exercise index for mixed list items
-private fun findOriginalExerciseIndex(mixedItem: Any, workoutExercises: List<WorkoutExercise>): Int {
+private fun findOriginalExerciseIndex(mixedItem: Any, workoutExercises: List<CreateSplitWorkoutExercise>): Int {
     return when (mixedItem) {
-        is WorkoutExercise -> {
+        is CreateSplitWorkoutExercise -> {
             // find the index of this individual exercise
             workoutExercises.indexOfFirst { it.id == mixedItem.id }
         }
         is Pair<*, *> -> {
             // this is a superset group, find the index of the first exercise in this group
-            val (supersetKey, exercises) = mixedItem as Pair<String, List<WorkoutExercise>>
+            val (supersetKey, exercises) = mixedItem as Pair<String, List<CreateSplitWorkoutExercise>>
             val supersetGroupId = supersetKey.removePrefix("superset_")
             workoutExercises.indexOfFirst { it.supersetGroupId == supersetGroupId }
         }
@@ -59,7 +59,7 @@ private fun findOriginalExerciseIndex(mixedItem: Any, workoutExercises: List<Wor
 @Composable
 fun DayContainer(
     dayName: String,
-    workoutExercises: List<WorkoutExercise>,
+    workoutExercises: List<CreateSplitWorkoutExercise>,
     onUpdateExercise: (String, Int?, Pair<Int, Int>?, Float?) -> Unit,
     onReorderExercises: (Int, Int) -> Unit,
     onToggleUnilateral: (String) -> Unit,
@@ -68,8 +68,6 @@ fun DayContainer(
     onCreateSuperset: (String) -> Unit,
     onRemoveFromSuperset: (String) -> Unit,
     onAddToSuperset: (String, String) -> Unit,
-    onReorderWithinSuperset: (String, Int, Int) -> Unit = { _, _, _ -> },
-    onDeleteSuperset: (String) -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     // smooth animated surface elevation
@@ -171,8 +169,7 @@ fun DayContainer(
             var hoveredSupersetId by remember { mutableStateOf<String?>(null) }
             var isDraggedOutside by remember { mutableStateOf(false) }
             
-            // focus state management for superset compression
-            var focusedSupersetIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+
             
             // calculate which superset the dragged card is over and if it's outside all containers
             LaunchedEffect(draggedCardPosition, supersetContainerBounds, draggedExerciseId) {
@@ -226,14 +223,14 @@ fun DayContainer(
                     items = mixedItems,
                     key = { _, item -> 
                         when (item) {
-                            is WorkoutExercise -> item.id
+                            is CreateSplitWorkoutExercise -> item.id
                             is Pair<*, *> -> item.first as String
                             else -> "unknown_${item.hashCode()}"
                         }
                     }
                 ) { _, item ->
                     when (item) {
-                        is WorkoutExercise -> {
+                        is CreateSplitWorkoutExercise -> {
                             // individual exercise
                             ReorderableItem(
                                 state = reorderableLazyListState,
@@ -295,16 +292,13 @@ fun DayContainer(
                         }
                         is Pair<*, *> -> {
                             // superset group
-                            val (supersetKey, exercises) = item as Pair<String, List<WorkoutExercise>>
+                            val (supersetKey, exercises) = item as Pair<String, List<CreateSplitWorkoutExercise>>
                             val supersetGroupId = supersetKey.removePrefix("superset_")
                             
                             // this superset is expanded if the dragged card is directly over it
                             val isExpanded = hoveredSupersetId == supersetGroupId && 
                                            draggedExerciseId != null &&
                                            !exercises.any { it.id == draggedExerciseId } // not dragging from this superset
-                            
-                            // check if this superset is focused
-                            val isFocused = focusedSupersetIds.contains(supersetGroupId)
                             
                             ReorderableItem(
                                 state = reorderableLazyListState,
@@ -324,22 +318,8 @@ fun DayContainer(
                                     onAddToSuperset = { exerciseId, targetSupersetId ->
                                         onAddToSuperset(exerciseId, targetSupersetId)
                                     },
-                                    onReorderWithinSuperset = onReorderWithinSuperset,
-                                    onDeleteSuperset = onDeleteSuperset,
                                     availableSupersets = availableSupersets,
-                                    isExpanded = isExpanded,
-                                    draggedExerciseId = draggedExerciseId,
-                                    onExerciseDraggedOut = { exerciseId ->
-                                        onRemoveFromSuperset(exerciseId)
-                                    },
-                                    isFocused = isFocused,
-                                    onFocusChanged = { supersetId, focused ->
-                                        focusedSupersetIds = if (focused) {
-                                            focusedSupersetIds + supersetId
-                                        } else {
-                                            focusedSupersetIds - supersetId
-                                        }
-                                    },
+                                    isDragTarget = isExpanded, // use isExpanded for isDragTarget
                                     dragHandleModifier = Modifier
                                         .draggableHandle(
                                             interactionSource = interactionSource,

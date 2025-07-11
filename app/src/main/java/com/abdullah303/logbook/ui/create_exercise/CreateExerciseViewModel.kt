@@ -14,6 +14,8 @@ import com.abdullah303.logbook.data.repository.PlateLoadedInfoRepository
 import com.abdullah303.logbook.data.repository.ResistanceMachineInfoRepository
 import com.abdullah303.logbook.data.repository.SmithMachineInfoRepository
 import com.abdullah303.logbook.data.local.entity.Exercise
+import com.abdullah303.logbook.data.local.entity.Equipment
+import com.abdullah303.logbook.data.model.WeightUnit
 import com.abdullah303.logbook.ui.create_exercise.components.BarbellConfiguration
 import com.abdullah303.logbook.ui.create_exercise.components.CableStackConfiguration
 import com.abdullah303.logbook.ui.create_exercise.components.ResistanceMachineConfiguration
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.util.UUID
@@ -447,17 +450,48 @@ class CreateExerciseViewModel @Inject constructor(
      * determines the equipment id based on selected configurations
      * prioritizes specific equipment configurations over general equipment types
      */
-    private fun getSelectedEquipmentId(): String? {
+    private suspend fun getSelectedEquipmentId(): String? {
         // check for specific equipment configurations first
         _selectedBarbell.value?.let { return it.equipment.id }
         _selectedSmithMachine.value?.let { return it.equipment.id }
         _selectedCableStack.value?.let { return it.equipment.id }
         _selectedResistanceMachine.value?.let { return it.equipment.id }
         
-        // if no specific equipment is selected, we need to handle general equipment types
-        // for now, return null to indicate no equipment selected
-        // todo: implement logic for general equipment types if needed
+        // if no specific equipment is selected, check for general equipment types
+        val selectedEquipment = _equipment.value
+        if (selectedEquipment.isNotEmpty()) {
+            // get or create generic equipment entry for the first selected type
+            return getOrCreateGenericEquipmentId(selectedEquipment.first())
+        }
+        
         return null
+    }
+    
+    /**
+     * gets or creates a generic equipment entry for the given equipment type
+     */
+    private suspend fun getOrCreateGenericEquipmentId(equipmentType: EquipmentType): String {
+        // look for existing generic equipment of this type
+        val equipmentList = equipmentRepository.getEquipmentByType(equipmentType).first()
+        val genericName = equipmentType.name.lowercase().replace('_', ' ')
+        val existingEquipment = equipmentList.firstOrNull { 
+            it.name.equals(genericName, ignoreCase = true) 
+        }
+        
+        if (existingEquipment != null) {
+            return existingEquipment.id
+        }
+        
+        // create new generic equipment entry
+        val genericEquipment = Equipment(
+            id = UUID.randomUUID().toString(),
+            name = genericName,
+            equipmentType = equipmentType,
+            weight_unit = WeightUnit.KG // default to kg
+        )
+        
+        equipmentRepository.insertEquipment(genericEquipment)
+        return genericEquipment.id
     }
     
     /**

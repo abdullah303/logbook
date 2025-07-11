@@ -5,15 +5,18 @@ import androidx.compose.runtime.Composable
 @Composable
 fun CreateSplitScreenNavigation(
     onNavigateBack: () -> Unit,
-    onNavigateToCreateExercise: () -> Unit
+    onNavigateToCreateExercise: () -> Unit,
+    onSaveComplete: () -> Unit
 ): CreateSplitScreenNavigationState {
     return CreateSplitScreenNavigationState(
         onNavigateBack = onNavigateBack,
-        onNavigateToCreateExercise = onNavigateToCreateExercise
+        onNavigateToCreateExercise = onNavigateToCreateExercise,
+        onSaveComplete = onSaveComplete
     )
 }
 
 data class CreateSplitScreenNavigationState(
     val onNavigateBack: () -> Unit,
-    val onNavigateToCreateExercise: () -> Unit
+    val onNavigateToCreateExercise: () -> Unit,
+    val onSaveComplete: () -> Unit
 ) 
