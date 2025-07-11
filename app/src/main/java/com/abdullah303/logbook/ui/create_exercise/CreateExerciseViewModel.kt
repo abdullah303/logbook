@@ -98,6 +98,10 @@ class CreateExerciseViewModel @Inject constructor(
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
     
+    // add newly created exercise state
+    private val _newlyCreatedExercise = MutableStateFlow<Exercise?>(null)
+    val newlyCreatedExercise: StateFlow<Exercise?> = _newlyCreatedExercise.asStateFlow()
+    
     init {
         loadEquipmentConfigurations()
     }
@@ -424,6 +428,9 @@ class CreateExerciseViewModel @Inject constructor(
                 // save to database
                 exerciseRepository.insertExercise(exercise)
                 
+                // set the newly created exercise
+                _newlyCreatedExercise.value = exercise
+                
                 // set success state
                 _saveSuccess.value = true
                 
@@ -458,5 +465,12 @@ class CreateExerciseViewModel @Inject constructor(
      */
     fun resetSaveSuccess() {
         _saveSuccess.value = false
+    }
+    
+    /**
+     * resets the newly created exercise state
+     */
+    fun resetNewlyCreatedExercise() {
+        _newlyCreatedExercise.value = null
     }
 } 

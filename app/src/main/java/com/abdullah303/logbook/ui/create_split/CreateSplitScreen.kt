@@ -18,6 +18,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.launch
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -30,11 +31,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.navigation.NavController
 import com.abdullah303.logbook.ui.components.BubbleContextMenu
 import com.abdullah303.logbook.ui.create_split.components.ExerciseListBottomSheet
 import com.abdullah303.logbook.ui.create_split.components.DayButtonGroup
 import com.abdullah303.logbook.ui.create_split.components.DayContainer
 import com.abdullah303.logbook.ui.components.InlineEditableText
+import com.abdullah303.logbook.data.local.entity.Exercise
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +45,8 @@ fun CreateSplitScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit = {},
     onNavigateToCreateExercise: () -> Unit = {},
-    viewModel: CreateSplitViewModel = hiltViewModel()
+    viewModel: CreateSplitViewModel = hiltViewModel(),
+    navController: NavController? = null
 ) {
     val navigationState = CreateSplitScreenNavigation(
         onNavigateBack = onNavigateBack,
@@ -67,6 +71,20 @@ fun CreateSplitScreen(
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val dayButtonPositions = remember { mutableStateMapOf<Int, Offset>() }
+
+    // observe navigation arguments for newly created exercise
+    LaunchedEffect(navController) {
+        navController?.let { nav ->
+            // check for newly created exercise ID in saved state handle
+            val exerciseId = nav.currentBackStackEntry?.savedStateHandle?.get<String>("newlyCreatedExerciseId")
+            exerciseId?.let { id ->
+                // add the exercise to the current day
+                viewModel.addExerciseById(id)
+                // clear the saved state
+                nav.currentBackStackEntry?.savedStateHandle?.remove<String>("newlyCreatedExerciseId")
+            }
+        }
+    }
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -123,7 +141,13 @@ fun CreateSplitScreen(
                     onUpdateExercise = viewModel::updateWorkoutExercise,
                     onReorderExercises = { fromIndex, toIndex ->
                         viewModel.reorderWorkoutExercises(selectedDayIndex, fromIndex, toIndex)
-                    }
+                    },
+                    onToggleUnilateral = viewModel::toggleUnilateral,
+                    onUpdateSideOrder = viewModel::updateSideOrder,
+                    onDeleteExercise = viewModel::removeWorkoutExercise,
+                    onCreateSuperset = viewModel::createSuperset,
+                    onRemoveFromSuperset = viewModel::removeFromSuperset,
+                    onAddToSuperset = viewModel::addToSuperset
                 )
             }
         }

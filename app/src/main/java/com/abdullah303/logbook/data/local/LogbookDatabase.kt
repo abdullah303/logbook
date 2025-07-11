@@ -49,7 +49,7 @@ import com.abdullah303.logbook.data.local.converter.Converters
 
 @Database(
     entities = [User::class, Settings::class, DumbbellRange::class, Equipment::class, Exercise::class, CableStackInfo::class, BarbellInfo::class, SmithMachineInfo::class, ResistanceMachineInfo::class, PinLoadedInfo::class, PlateLoadedInfo::class, Splits::class, LoggedSplits::class, Workout::class, SupersetGroup::class, WorkoutExercise::class, WorkoutExerciseSnapshot::class, LoggedWorkout::class, LoggedSet::class, ExerciseNotes::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

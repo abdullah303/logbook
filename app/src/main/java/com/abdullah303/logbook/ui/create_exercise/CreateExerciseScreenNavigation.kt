@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun CreateExerciseScreenNavigation(
-    onNavigateBack: () -> Unit,
+    onNavigateBack: (String?) -> Unit,
     onNavigateToCreateSmithMachine: () -> Unit = {},
     onNavigateToCreateCableStack: () -> Unit = {}
 ): CreateExerciseScreenNavigationState {
@@ -16,7 +16,7 @@ fun CreateExerciseScreenNavigation(
 }
 
 data class CreateExerciseScreenNavigationState(
-    val onNavigateBack: () -> Unit,
+    val onNavigateBack: (String?) -> Unit,
     val onNavigateToCreateSmithMachine: () -> Unit,
     val onNavigateToCreateCableStack: () -> Unit
 ) 

@@ -49,12 +49,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.abdullah303.logbook.data.local.entity.Exercise
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateExerciseScreen(
     modifier: Modifier = Modifier,
-    onNavigateBack: () -> Unit = {},
+    onNavigateBack: (String?) -> Unit = {},
     viewModel: CreateExerciseViewModel = hiltViewModel()
 ) {
     val navigationState = CreateExerciseScreenNavigation(
@@ -77,12 +78,16 @@ fun CreateExerciseScreen(
     val selectedResistanceMachine by viewModel.selectedResistanceMachine.collectAsState()
     val saveSuccess by viewModel.saveSuccess.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
+    val newlyCreatedExercise by viewModel.newlyCreatedExercise.collectAsState()
     
-    // handle save success
-    LaunchedEffect(saveSuccess) {
-        if (saveSuccess) {
-            onNavigateBack()
+    // handle save success and newly created exercise
+    LaunchedEffect(saveSuccess, newlyCreatedExercise) {
+        if (saveSuccess && newlyCreatedExercise != null) {
+            // reset the states
             viewModel.resetSaveSuccess()
+            viewModel.resetNewlyCreatedExercise()
+            // navigate back with the exercise ID
+            onNavigateBack(newlyCreatedExercise!!.id)
         }
     }
 

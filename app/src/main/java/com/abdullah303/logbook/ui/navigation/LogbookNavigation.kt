@@ -9,6 +9,7 @@ import com.abdullah303.logbook.ui.create_exercise.CreateExerciseScreen
 import com.abdullah303.logbook.ui.create_split.CreateSplitScreen
 import com.abdullah303.logbook.ui.home.HomeScreen
 
+
 @Composable
 fun LogbookNavigation(
     navController: NavHostController,
@@ -39,14 +40,17 @@ fun LogbookNavigation(
                 },
                 onNavigateToCreateExercise = {
                     navController.navigate(Routes.CreateExercise.route)
-                }
+                },
+                navController = navController
             )
         }
         
         // create exercise screen
         composable(Routes.CreateExercise.route) {
             CreateExerciseScreen(
-                onNavigateBack = {
+                onNavigateBack = { exerciseId ->
+                    // navigate back with the exercise ID
+                    navController.previousBackStackEntry?.savedStateHandle?.set("newlyCreatedExerciseId", exerciseId)
                     navController.popBackStack()
                 }
             )

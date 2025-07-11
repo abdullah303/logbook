@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.abdullah303.logbook.data.local.entity.Exercise
 import com.abdullah303.logbook.data.local.entity.Equipment
 import com.abdullah303.logbook.data.model.Muscles
+import com.abdullah303.logbook.data.model.Side
 import com.abdullah303.logbook.data.repository.ExerciseRepository
 import com.abdullah303.logbook.data.repository.EquipmentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 /**
@@ -35,7 +37,10 @@ data class WorkoutExercise(
     val sets: Int = 3,
     val repMin: Int = 8,
     val repMax: Int = 12,
-    val rir: Float = 2.0f // rating of perceived exertion in reserve
+    val rir: Float = 2.0f, // rating of perceived exertion in reserve
+    val isUnilateral: Boolean = false,
+    val sides: List<Side> = listOf(Side.LEFT, Side.RIGHT),
+    val supersetGroupId: String? = null // null means not in a superset
 )
 
 /**
@@ -228,25 +233,77 @@ class CreateSplitViewModel @Inject constructor(
     /**
      * updates parameters for a workout exercise
      */
-    fun updateWorkoutExercise(exerciseId: String, sets: Int? = null, repRange: Pair<Int, Int>? = null, rir: Float? = null) {
+    fun updateWorkoutExercise(
+        exerciseId: String,
+        sets: Int? = null,
+        repRange: Pair<Int, Int>? = null,
+        rir: Float? = null,
+        isUnilateral: Boolean? = null,
+        sideOrder: List<Side>? = null
+    ) {
         val currentExercises = _dayExercises.value.toMutableMap()
-        
         // find the exercise across all days
         currentExercises.forEach { (dayIndex, exercises) ->
             val exerciseIndex = exercises.indexOfFirst { it.id == exerciseId }
             if (exerciseIndex != -1) {
                 val updatedExercises = exercises.toMutableList()
                 val currentExercise = updatedExercises[exerciseIndex]
-                
+
                 updatedExercises[exerciseIndex] = currentExercise.copy(
                     sets = sets ?: currentExercise.sets,
                     repMin = repRange?.first ?: currentExercise.repMin,
                     repMax = repRange?.second ?: currentExercise.repMax,
-                    rir = rir ?: currentExercise.rir
+                    rir = rir ?: currentExercise.rir,
+                    isUnilateral = isUnilateral ?: currentExercise.isUnilateral,
+                    sides = sideOrder ?: currentExercise.sides
                 )
-                
+
                 currentExercises[dayIndex] = updatedExercises
                 _dayExercises.value = currentExercises
+                return
+            }
+        }
+    }
+
+    /**
+     * toggles unilateral state for a workout exercise
+     */
+    fun toggleUnilateral(exerciseId: String) {
+        // flip unilateral flag, keep side order as is or default if turning on
+        val currentExercises = _dayExercises.value.toMutableMap()
+        currentExercises.forEach { (dayIndex, exercises) ->
+            val idx = exercises.indexOfFirst { it.id == exerciseId }
+            if (idx != -1) {
+                val updated = exercises.toMutableList()
+                val ex = updated[idx]
+                val newIsUnilateral = !ex.isUnilateral
+                updated[idx] = ex.copy(
+                    isUnilateral = newIsUnilateral,
+                    sides = if (newIsUnilateral) ex.sides else ex.sides // keep order; unused when off
+                )
+                currentExercises[dayIndex] = updated
+                _dayExercises.value = currentExercises
+                return
+            }
+        }
+    }
+
+    /**
+     * updates the internal side order for a unilateral exercise
+     */
+    fun updateSideOrder(exerciseId: String, newOrder: List<Side>) {
+        if (newOrder.size != 2) return
+        val currentExercises = _dayExercises.value.toMutableMap()
+        currentExercises.forEach { (dayIndex, exercises) ->
+            val idx = exercises.indexOfFirst { it.id == exerciseId }
+            if (idx != -1) {
+                val updated = exercises.toMutableList()
+                val ex = updated[idx]
+                if (ex.isUnilateral) {
+                    updated[idx] = ex.copy(sides = newOrder)
+                    currentExercises[dayIndex] = updated
+                    _dayExercises.value = currentExercises
+                }
                 return
             }
         }
@@ -296,5 +353,161 @@ class CreateSplitViewModel @Inject constructor(
      */
     fun refreshExercises() {
         loadExercises()
+    }
+    
+    /**
+     * adds a specific exercise by ID to the current day
+     */
+    fun addExerciseById(exerciseId: String) {
+        viewModelScope.launch {
+            try {
+                // get the exercise from the database
+                val exercise = exerciseRepository.getExerciseById(exerciseId)
+                if (exercise != null) {
+                    // get equipment name for the exercise
+                    val equipment = equipmentRepository.getEquipmentById(exercise.equipment_id)
+                    val equipmentName = equipment?.name ?: "Unknown Equipment"
+                    
+                    // create exercise with equipment
+                    val exerciseWithEquipment = ExerciseWithEquipment(
+                        exercise = exercise,
+                        equipmentName = equipmentName
+                    )
+                    
+                    // check if this exercise is already in the current day
+                    val currentDayIndex = _selectedDayIndex.value
+                    val currentExercises = _dayExercises.value[currentDayIndex] ?: emptyList()
+                    val isAlreadyAdded = currentExercises.any { it.exercise.id == exercise.id }
+                    
+                    // only add if not already present
+                    if (!isAlreadyAdded) {
+                        selectExercise(exerciseWithEquipment)
+                    }
+                }
+                
+            } catch (e: Exception) {
+                // handle error - could add error state if needed
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    /**
+     * adds the most recently created exercise to the current day
+     * this method is called when returning from the create exercise screen
+     */
+    fun addMostRecentExercise() {
+        viewModelScope.launch {
+            try {
+                // refresh exercises list to get the most recent one
+                refreshExercises()
+                
+                // get the most recent exercise from the database
+                val exercises = exerciseRepository.getAllExercisesFlow().first()
+                if (exercises.isNotEmpty()) {
+                    val mostRecentExercise = exercises.maxByOrNull { it.id } // assuming id is timestamp-based
+                    mostRecentExercise?.let { exercise ->
+                        // get equipment name for the exercise
+                        val equipment = equipmentRepository.getEquipmentById(exercise.equipment_id)
+                        val equipmentName = equipment?.name ?: "Unknown Equipment"
+                        
+                        // create exercise with equipment
+                        val exerciseWithEquipment = ExerciseWithEquipment(
+                            exercise = exercise,
+                            equipmentName = equipmentName
+                        )
+                        
+                        // check if this exercise is already in the current day
+                        val currentDayIndex = _selectedDayIndex.value
+                        val currentExercises = _dayExercises.value[currentDayIndex] ?: emptyList()
+                        val isAlreadyAdded = currentExercises.any { it.exercise.id == exercise.id }
+                        
+                        // only add if not already present
+                        if (!isAlreadyAdded) {
+                            selectExercise(exerciseWithEquipment)
+                        }
+                    }
+                }
+                
+            } catch (e: Exception) {
+                // handle error - could add error state if needed
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * creates a new superset group with the given exercise
+     */
+    fun createSuperset(exerciseId: String) {
+        val currentExercises = _dayExercises.value.toMutableMap()
+        currentExercises.forEach { (dayIndex, exercises) ->
+            val exerciseIndex = exercises.indexOfFirst { it.id == exerciseId }
+            if (exerciseIndex != -1) {
+                val updatedExercises = exercises.toMutableList()
+                val currentExercise = updatedExercises[exerciseIndex]
+                val supersetGroupId = "superset_${System.currentTimeMillis()}"
+                
+                updatedExercises[exerciseIndex] = currentExercise.copy(
+                    supersetGroupId = supersetGroupId
+                )
+                
+                currentExercises[dayIndex] = updatedExercises
+                _dayExercises.value = currentExercises
+                return
+            }
+        }
+    }
+    
+    /**
+     * adds an exercise to an existing superset group
+     */
+    fun addToSuperset(exerciseId: String, targetSupersetGroupId: String) {
+        val currentExercises = _dayExercises.value.toMutableMap()
+        currentExercises.forEach { (dayIndex, exercises) ->
+            val exerciseIndex = exercises.indexOfFirst { it.id == exerciseId }
+            if (exerciseIndex != -1) {
+                val updatedExercises = exercises.toMutableList()
+                val currentExercise = updatedExercises[exerciseIndex]
+                
+                updatedExercises[exerciseIndex] = currentExercise.copy(
+                    supersetGroupId = targetSupersetGroupId
+                )
+                
+                currentExercises[dayIndex] = updatedExercises
+                _dayExercises.value = currentExercises
+                return
+            }
+        }
+    }
+    
+    /**
+     * removes an exercise from its superset group
+     */
+    fun removeFromSuperset(exerciseId: String) {
+        val currentExercises = _dayExercises.value.toMutableMap()
+        currentExercises.forEach { (dayIndex, exercises) ->
+            val exerciseIndex = exercises.indexOfFirst { it.id == exerciseId }
+            if (exerciseIndex != -1) {
+                val updatedExercises = exercises.toMutableList()
+                val currentExercise = updatedExercises[exerciseIndex]
+                
+                updatedExercises[exerciseIndex] = currentExercise.copy(
+                    supersetGroupId = null
+                )
+                
+                currentExercises[dayIndex] = updatedExercises
+                _dayExercises.value = currentExercises
+                return
+            }
+        }
+    }
+    
+    /**
+     * gets all exercises in a superset group for a given day
+     */
+    fun getExercisesInSuperset(dayIndex: Int, supersetGroupId: String): List<WorkoutExercise> {
+        val exercises = _dayExercises.value[dayIndex] ?: emptyList()
+        return exercises.filter { it.supersetGroupId == supersetGroupId }
     }
 } 
